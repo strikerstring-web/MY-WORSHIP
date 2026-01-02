@@ -47,16 +47,16 @@ const Logo: React.FC<LogoProps> = ({ className = '', size = 'md', withText = fal
       
       {withText && (
         <div className="mt-4 text-center animate-fade-up">
-          <span className="text-2xl font-black text-slate-900 dark:text-emerald-50 arabic-font block tracking-tight leading-none" dir="rtl">
+          <span className="text-xl font-black text-slate-900 dark:text-emerald-50 font-title-ar block tracking-tight leading-none">
             عبادتي
           </span>
-          <div className="mt-2.5 flex flex-col items-center">
-            <div className="flex items-center gap-2.5">
-              <span className="h-px w-4 bg-emerald-500/20"></span>
-              <p className="text-emerald-600 dark:text-emerald-400 font-extrabold text-[9px] uppercase tracking-[0.4em]">
+          <div className="mt-2 flex flex-col items-center">
+            <div className="flex items-center gap-2">
+              <span className="h-[1px] w-4 bg-emerald-500/20"></span>
+              <p className="text-emerald-600 dark:text-emerald-400 font-title-en text-[9px]">
                 Ibadathi
               </p>
-              <span className="h-px w-4 bg-emerald-500/20"></span>
+              <span className="h-[1px] w-4 bg-emerald-500/20"></span>
             </div>
           </div>
         </div>

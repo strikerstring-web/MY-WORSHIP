@@ -27,17 +27,17 @@ const Welcome: React.FC<WelcomeProps> = ({ onEnter, language, setLanguage, t }) 
       <div className="z-10 w-full max-w-sm flex-1 flex flex-col items-center justify-center pt-4">
         {/* Typographic Branding */}
         <div className="animate-fade-up mt-8 mb-12 flex flex-col items-center">
-          <span className="text-6xl font-black text-white dark:text-emerald-50 arabic-font block tracking-tight leading-none mb-4" dir="rtl">
+          <span className="text-5xl font-black text-white dark:text-emerald-50 font-title-ar block tracking-tight leading-none mb-6">
             عبادتي
           </span>
           <div className="flex items-center gap-3">
-            <span className="h-px w-6 bg-emerald-500/40"></span>
-            <p className="text-emerald-500 dark:text-emerald-400 font-black text-[11px] uppercase tracking-[0.6em]">
+            <span className="h-[2px] w-6 bg-emerald-500/40 rounded-full"></span>
+            <p className="text-emerald-500 dark:text-emerald-400 font-title-en text-sm">
               Ibadathi
             </p>
-            <span className="h-px w-6 bg-emerald-500/40"></span>
+            <span className="h-[2px] w-6 bg-emerald-500/40 rounded-full"></span>
           </div>
-          <p className="text-slate-400 text-[11px] font-medium max-w-[240px] mx-auto leading-relaxed mt-8 opacity-70">
+          <p className="text-slate-400 text-[10px] font-medium max-w-[220px] mx-auto leading-relaxed mt-10 opacity-70">
             {t('welcomeSub')}
           </p>
         </div>

@@ -79,12 +79,6 @@ export interface QadaReminder {
   enabled: boolean;
 }
 
-export interface PrayerReminder {
-  prayer: string;
-  time: string;
-  enabled: boolean;
-}
-
 export interface HealthPeriod {
   id: string;
   start: string; // ISO Date string
@@ -110,8 +104,9 @@ export interface UserData {
     notificationsEnabled: boolean;
     locationEnabled: boolean;
     theme: 'light' | 'dark';
+    ecoMode: boolean; // Optimize for low-end devices
     qadaReminders: QadaReminder[];
-    prayerReminders: PrayerReminder[];
+    // Manual prayerReminders removed in favor of automatic system
   };
 }
 
@@ -119,4 +114,5 @@ export interface AppState {
   currentUser: string | null; // username
   users: Record<string, UserData>; // Mock database
   todayTimings: PrayerTimings | null;
+  location: { lat: number, lng: number } | null;
 }

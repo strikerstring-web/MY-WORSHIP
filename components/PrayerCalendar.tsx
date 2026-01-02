@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { UserData, PrayerStatus, PrayerTimings } from '../types';
+import React, { useState, useMemo } from 'react';
+import { UserData, PrayerStatus, PrayerTimings, FastingLog } from '../types';
 import { PRAYERS } from '../constants';
 
 interface PrayerCalendarProps {
@@ -11,7 +11,10 @@ interface PrayerCalendarProps {
 
 const PrayerCalendar: React.FC<PrayerCalendarProps> = ({ state, updatePrayerStatus, setCurrentView, t }) => {
   const [viewDate, setViewDate] = useState(new Date());
-  const month = viewDate.getMonth(), year = viewDate.getFullYear();
+  const [selectedDateStr, setSelectedDateStr] = useState<string>(new Date().toISOString().split('T')[0]);
+
+  const month = viewDate.getMonth();
+  const year = viewDate.getFullYear();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const firstDay = new Date(year, month, 1).getDay();
 
@@ -21,106 +24,214 @@ const PrayerCalendar: React.FC<PrayerCalendarProps> = ({ state, updatePrayerStat
   });
 
   const isExcused = (date: string) => state.healthPeriods.some(p => {
-    // Normalize date to start of day for accurate comparison
     const d = new Date(date).setHours(0, 0, 0, 0);
     const start = new Date(p.start).setHours(0, 0, 0, 0);
     const end = p.end ? new Date(p.end).setHours(23, 59, 59, 999) : new Date().setHours(23, 59, 59, 999);
     return d >= start && d <= end;
   });
 
+  const getHijriDay = (date: string) => {
+    try {
+      const d = new Date(date);
+      const parts = new Intl.DateTimeFormat('en-u-ca-islamic-uma-nu-latn', { day: 'numeric' }).formatToParts(d);
+      return parts.find(p => p.type === 'day')?.value || '';
+    } catch (e) { return ''; }
+  };
+
+  const getDayWorshipData = (date: string) => {
+    const log = state.prayerLogs[date] || {};
+    const sunnah = state.sunnahLogs[date] || [];
+    const fasting = Object.entries(state.fastingLogs).find(([k, v]) => k.includes(date) || (k.startsWith('ramadan') && date === k.split('-').slice(2).join('-')))?.[1] as FastingLog | undefined;
+    
+    // Check if dhikr was done on this date
+    const dhikrDone = state.dhikrHistory.some(h => h.date.startsWith(date));
+    
+    // Check if quran was updated on this date
+    const quranDone = state.quranProgress.lastUpdated.startsWith(date);
+
+    return {
+      fardCount: PRAYERS.filter(p => log[p] === PrayerStatus.COMPLETED).length,
+      missedCount: PRAYERS.filter(p => log[p] === PrayerStatus.MISSED).length,
+      sunnahCount: sunnah.length,
+      isFasting: fasting?.status === 'completed',
+      dhikrDone,
+      quranDone,
+      excused: isExcused(date)
+    };
+  };
+
+  const selectedData = useMemo(() => getDayWorshipData(selectedDateStr), [selectedDateStr, state]);
+
   return (
-    <div className="flex flex-col h-full bg-[#fdfbf7] dark:bg-slate-950 overflow-hidden">
-      <header className="p-4 pt-10 bg-gradient-to-br from-emerald-900 via-teal-900 to-emerald-950 text-white shrink-0 shadow-lg rounded-b-[32px]">
-        <div className="flex justify-between items-center mb-6">
+    <div className="flex flex-col h-full bg-ivory dark:bg-slate-950 overflow-hidden view-transition">
+      {/* Premium Header */}
+      <header className="p-6 pt-12 bg-gradient-to-br from-emerald-800 via-teal-900 to-emerald-950 text-white shrink-0 shadow-2xl rounded-b-[48px] relative z-20">
+        <div className="flex justify-between items-center mb-8">
           <div className="flex flex-col">
-            <h1 className="text-xl font-black tracking-tighter leading-none">{viewDate.toLocaleString('default', { month: 'long' })}</h1>
-            <span className="text-[10px] font-black text-emerald-300 uppercase tracking-widest mt-1">{year}</span>
+            <h1 className="text-2xl font-black tracking-tight leading-none">
+              {viewDate.toLocaleString('default', { month: 'long' })}
+            </h1>
+            <div className="flex items-center gap-2 mt-2">
+              <span className="text-[10px] font-black text-emerald-300 uppercase tracking-widest">{year}</span>
+              <span className="w-1 h-1 rounded-full bg-emerald-500/40"></span>
+              <span className="text-[10px] font-black text-amber-400 uppercase tracking-widest">Hijri {new Intl.DateTimeFormat('en-u-ca-islamic-uma-nu-latn', { year: 'numeric' }).format(viewDate)}</span>
+            </div>
           </div>
           <div className="flex gap-2">
-            <button onClick={() => setViewDate(new Date(year, month - 1, 1))} className="w-9 h-9 bg-white/10 rounded-xl flex items-center justify-center hover:bg-white/20 transition-all active:scale-90"><i className="fas fa-chevron-left text-xs"></i></button>
-            <button onClick={() => setViewDate(new Date(year, month + 1, 1))} className="w-9 h-9 bg-white/10 rounded-xl flex items-center justify-center hover:bg-white/20 transition-all active:scale-90"><i className="fas fa-chevron-right text-xs"></i></button>
+            <button onClick={() => setViewDate(new Date(year, month - 1, 1))} className="w-11 h-11 bg-white/10 rounded-2xl flex items-center justify-center hover:bg-white/20 transition-all active:scale-90 border border-white/10">
+              <i className="fas fa-chevron-left text-sm"></i>
+            </button>
+            <button onClick={() => setViewDate(new Date(year, month + 1, 1))} className="w-11 h-11 bg-white/10 rounded-2xl flex items-center justify-center hover:bg-white/20 transition-all active:scale-90 border border-white/10">
+              <i className="fas fa-chevron-right text-sm"></i>
+            </button>
           </div>
         </div>
+
+        {/* Calendar Grid Header */}
         <div className="grid grid-cols-7 gap-1 px-1">
-          {['S','M','T','W','T','F','S'].map((d, i) => <div key={i} className="text-center text-[7px] font-black text-emerald-300 uppercase opacity-60">{d}</div>)}
+          {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map((d, i) => (
+            <div key={i} className="text-center text-[8px] font-black text-emerald-300 uppercase tracking-[0.2em] opacity-40">{d}</div>
+          ))}
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto p-4 pb-32 no-scrollbar">
+      {/* Main Content Area */}
+      <div className="flex-1 overflow-y-auto px-4 pt-6 pb-32 no-scrollbar">
         <div className="content-limit w-full">
-          {/* Calendar Grid */}
-          <div className="grid grid-cols-7 gap-2 mb-8">
+          
+          {/* Monthly Grid */}
+          <div className="grid grid-cols-7 gap-3 mb-6 animate-fade-up">
             {Array(firstDay).fill(null).map((_, i) => <div key={`empty-${i}`} className="aspect-square" />)}
             {days.map(d => {
-              const log = state.prayerLogs[d] || {};
-              const excused = isExcused(d);
-              const done = PRAYERS.filter(p => log[p] === PrayerStatus.COMPLETED).length;
-              const missed = PRAYERS.filter(p => log[p] === PrayerStatus.MISSED).length;
-              
+              const { fardCount, missedCount, isFasting, dhikrDone, quranDone, excused } = getDayWorshipData(d);
+              const isSelected = selectedDateStr === d;
+              const isToday = d === new Date().toISOString().split('T')[0];
+              const dayNum = d.split('-')[2];
+              const hijriDay = getHijriDay(d);
+
               return (
-                <div key={d} className={`aspect-square rounded-xl border flex flex-col items-center justify-center gap-0.5 transition-all ${excused ? 'bg-pink-50/20 border-pink-100/50 dark:bg-pink-900/10 dark:border-pink-900/30' : 'bg-white dark:bg-slate-900 border-slate-50 dark:border-slate-800 shadow-sm'}`}>
-                  <span className={`text-[10px] font-black ${excused ? 'text-pink-400' : 'text-slate-900 dark:text-emerald-100'}`}>{d.split('-')[2]}</span>
-                  <div className="flex gap-0.5">
+                <button 
+                  key={d} 
+                  onClick={() => setSelectedDateStr(d)}
+                  className={`
+                    relative aspect-square rounded-[1.25rem] border-2 flex flex-col items-center justify-center gap-1 transition-all duration-300
+                    ${isSelected ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 shadow-xl shadow-emerald-500/10 scale-110 z-10' : 
+                      excused ? 'bg-rose-50/10 border-rose-100/50 dark:bg-rose-900/10 dark:border-rose-900/30' : 
+                      isToday ? 'border-teal-500/30 bg-white dark:bg-slate-900 shadow-sm' :
+                      'bg-white dark:bg-slate-900 border-slate-50 dark:border-slate-800 shadow-sm'}
+                  `}
+                >
+                  <div className="flex flex-col items-center">
+                    <span className={`text-[11px] font-black leading-none ${isSelected ? 'text-emerald-600 dark:text-emerald-400' : excused ? 'text-rose-400' : 'text-slate-900 dark:text-emerald-100'}`}>
+                      {parseInt(dayNum)}
+                    </span>
+                    <span className="text-[6px] font-bold text-slate-400 mt-0.5 opacity-60">{hijriDay}</span>
+                  </div>
+                  
+                  <div className="flex flex-wrap justify-center gap-[2px] px-1">
                     {excused ? (
-                      <i className="fas fa-leaf text-[6px] text-pink-300 animate-pulse"></i>
+                      <i className="fas fa-leaf text-[7px] text-rose-300/60"></i>
                     ) : (
                       <>
-                        {done > 0 && <div className="w-1 h-1 rounded-full bg-emerald-500"></div>}
-                        {missed > 0 && <div className="w-1 h-1 rounded-full bg-rose-500"></div>}
+                        {fardCount > 0 && <div className="w-1 h-1 rounded-full bg-emerald-500"></div>}
+                        {missedCount > 0 && <div className="w-1 h-1 rounded-full bg-rose-500"></div>}
+                        {dhikrDone && <div className="w-1 h-1 rounded-full bg-blue-500"></div>}
+                        {quranDone && <div className="w-1 h-1 rounded-full bg-purple-500"></div>}
+                        {isFasting && <div className="w-1 h-1 rounded-full bg-amber-500"></div>}
                       </>
                     )}
                   </div>
-                </div>
+                </button>
               );
             })}
           </div>
 
-          {/* Qadah Tracker Table */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between px-2">
-              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('qadah')} Table</h3>
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div><span className="text-[7px] text-slate-400 font-bold">Done</span></div>
-                <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-rose-500"></div><span className="text-[7px] text-slate-400 font-bold">Missed</span></div>
-                <div className="flex items-center gap-1"><i className="fas fa-leaf text-[7px] text-pink-400"></i><span className="text-[7px] text-slate-400 font-bold">Excused</span></div>
-              </div>
+          {/* Calendar Legend */}
+          <div className="flex flex-wrap justify-center gap-x-5 gap-y-3 mb-8 px-4 py-4 bg-white/40 dark:bg-slate-900/40 rounded-3xl border border-slate-100 dark:border-slate-800 animate-fade-up stagger-1" aria-label="Calendar Legend">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/20"></div>
+              <span className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">{t('completed')}</span>
             </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-rose-500 shadow-sm shadow-rose-500/20"></div>
+              <span className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">{t('missed')}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-blue-500 shadow-sm shadow-blue-500/20"></div>
+              <span className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">{t('dhikr')}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-purple-500 shadow-sm shadow-purple-500/20"></div>
+              <span className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">{t('quran')}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-amber-500 shadow-sm shadow-amber-500/20"></div>
+              <span className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">{t('fasting')}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <i className="fas fa-leaf text-[9px] text-rose-400"></i>
+              <span className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">{t('excused')}</span>
+            </div>
+          </div>
 
-            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] overflow-hidden border border-slate-50 dark:border-slate-800 shadow-sm bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-950">
-               <div className="grid grid-cols-6 bg-emerald-50/50 dark:bg-emerald-950/10 p-4 border-b dark:border-slate-800">
-                  <div className="text-[7px] font-black text-emerald-600 uppercase">Day</div>
-                  {PRAYERS.map(p => (
-                    <div key={p} className="text-[7px] font-black text-emerald-600 uppercase text-center truncate px-0.5">
-                      {t(p).charAt(0)}
-                    </div>
-                  ))}
-               </div>
-               
-               <div className="max-h-[350px] overflow-y-auto no-scrollbar">
-                 {days.slice().reverse().map(d => {
-                   const l = state.prayerLogs[d] || {};
-                   const excused = isExcused(d);
-                   return (
-                     <div key={d} className={`grid grid-cols-6 p-4 border-b last:border-0 dark:border-slate-800/50 transition-colors ${excused ? 'bg-pink-50/5 dark:bg-pink-900/5 grayscale opacity-60' : 'hover:bg-slate-50/50 dark:hover:bg-slate-800/50'}`}>
-                        <div className={`text-[9px] font-black ${excused ? 'text-pink-300' : 'text-slate-400'}`}>{d.split('-')[2]}</div>
-                        {PRAYERS.map(p => (
-                          <button 
-                            key={p} 
-                            disabled={excused}
-                            onClick={() => !excused && updatePrayerStatus(d, p, l[p] === PrayerStatus.COMPLETED ? PrayerStatus.PENDING : PrayerStatus.COMPLETED)}
-                            className={`flex justify-center items-center h-4 w-full transition-all ${excused ? 'cursor-not-allowed' : 'active:scale-90'}`}
-                          >
-                             {excused ? (
-                               <i className="fas fa-leaf text-[8px] text-pink-200 dark:text-pink-900/40"></i>
-                             ) : (
-                               <i className={`fas ${l[p] === PrayerStatus.COMPLETED ? 'fa-check-circle text-emerald-500' : l[p] === PrayerStatus.MISSED ? 'fa-times-circle text-rose-500' : 'fa-circle text-slate-100 dark:text-slate-800'} text-[10px]`}></i>
-                             )}
-                          </button>
-                        ))}
-                     </div>
-                   );
-                 })}
-               </div>
+          {/* Selected Day Details Card */}
+          <div className="animate-fade-up stagger-2">
+            <div className="card-premium !p-6 bg-white dark:bg-slate-900/50 border-emerald-50 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none">
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{t('summary')}</h3>
+                  <h2 className="text-xl font-black text-emerald-950 dark:text-white tracking-tight">
+                    {new Date(selectedDateStr).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'short' })}
+                  </h2>
+                </div>
+                {selectedData.excused && (
+                  <span className="px-3 py-1 bg-rose-50 dark:bg-rose-900/20 text-rose-500 text-[8px] font-black uppercase tracking-widest rounded-full border border-rose-100 dark:border-rose-800/30">
+                    <i className="fas fa-leaf mr-1"></i> {t('excused')}
+                  </span>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center gap-4 p-4 rounded-2xl bg-emerald-50/50 dark:bg-emerald-900/10 border border-emerald-100/50 dark:border-emerald-900/20">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg ${selectedData.fardCount === 5 ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-white dark:bg-slate-800 text-emerald-600'}`}>
+                    <i className="fas fa-kaaba"></i>
+                  </div>
+                  <div>
+                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{t('fard')}</p>
+                    <p className="text-sm font-black text-emerald-950 dark:text-white">{selectedData.fardCount}/5</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4 p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100/50 dark:border-blue-900/20">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg ${selectedData.dhikrDone ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-white dark:bg-slate-800 text-blue-600'}`}>
+                    <i className="fas fa-fingerprint"></i>
+                  </div>
+                  <div>
+                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{t('dhikr')}</p>
+                    <p className="text-sm font-black text-emerald-950 dark:text-white">{selectedData.dhikrDone ? 'Active' : 'Pending'}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4 p-4 rounded-2xl bg-purple-50/50 dark:bg-purple-900/10 border border-purple-100/50 dark:border-purple-900/20">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg ${selectedData.quranDone ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/20' : 'bg-white dark:bg-slate-800 text-purple-600'}`}>
+                    <i className="fas fa-book-quran"></i>
+                  </div>
+                  <div>
+                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{t('quran')}</p>
+                    <p className="text-sm font-black text-emerald-950 dark:text-white">{selectedData.quranDone ? 'Read' : 'Pending'}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4 p-4 rounded-2xl bg-amber-50/50 dark:bg-amber-900/10 border border-amber-100/50 dark:border-amber-900/20">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg ${selectedData.isFasting ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20' : 'bg-white dark:bg-slate-800 text-amber-600'}`}>
+                    <i className="fas fa-moon"></i>
+                  </div>
+                  <div>
+                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{t('fasting')}</p>
+                    <p className="text-sm font-black text-emerald-950 dark:text-white">{selectedData.isFasting ? 'Fasting' : 'None'}</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

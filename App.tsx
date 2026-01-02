@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { AppState, UserProfile, UserData, Language, PrayerStatus, DhikrChallenge, PersonalDhikr, PrayerTimings, QadaReminder, DhikrHistoryEntry, HealthPeriod, FastingLog, QuranProgress } from './types';
 import { TRANSLATIONS, PRAYERS } from './constants';
 import Dashboard from './components/Dashboard';
@@ -13,6 +13,7 @@ import Welcome from './components/Welcome';
 import QiblaFinder from './components/QiblaFinder';
 import AboutHelp from './components/AboutHelp';
 import MyAccount from './components/MyAccount';
+import { PrayerTimes, Coordinates, CalculationMethod } from 'https://esm.sh/adhan@4.4.0';
 
 const USERS_DB_KEY = 'ibadathi_v6_users_database';
 const SESSION_KEY = 'ibadathi_v6_active_session';
@@ -30,14 +31,6 @@ const DEFAULT_TIMINGS: PrayerTimings = {
   Fajr: "05:12", Sunrise: "06:34", Dhuhr: "12:28", Asr: "15:42", Maghrib: "18:22", Isha: "19:38"
 };
 
-const INITIAL_PRAYER_REMINDERS = [
-  { prayer: 'fajr', time: '05:30', enabled: false },
-  { prayer: 'dhuhr', time: '12:30', enabled: false },
-  { prayer: 'asr', time: '15:30', enabled: false },
-  { prayer: 'maghrib', time: '18:30', enabled: false },
-  { prayer: 'isha', time: '19:30', enabled: false },
-];
-
 const App: React.FC = () => {
   const [state, setState] = useState<AppState>(() => {
     const savedUsers = localStorage.getItem(USERS_DB_KEY);
@@ -45,11 +38,14 @@ const App: React.FC = () => {
     let parsedUsers: Record<string, UserData> = {};
     try { parsedUsers = savedUsers ? JSON.parse(savedUsers) : {}; } catch (e) { console.error("Data Parse Error", e); }
     const currentUser = (activeSession && parsedUsers[activeSession.toLowerCase()]) ? activeSession.toLowerCase() : null;
-    return { currentUser, users: parsedUsers, todayTimings: DEFAULT_TIMINGS };
+    return { currentUser, users: parsedUsers, todayTimings: DEFAULT_TIMINGS, location: null };
   });
 
   const [activeTab, setActiveTab] = useState<'home' | 'prayer' | 'tracker' | 'challenges' | 'account'>('home');
   const [subView, setSubView] = useState<string | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const lastAlertedPrayer = useRef<string | null>(null);
+
   const [currentLanguage, setCurrentLanguage] = useState<Language>(() => {
     const session = localStorage.getItem(SESSION_KEY);
     const savedUsers = localStorage.getItem(USERS_DB_KEY);
@@ -61,6 +57,7 @@ const App: React.FC = () => {
     return 'en';
   });
 
+  // Persist user data
   useEffect(() => {
     localStorage.setItem(USERS_DB_KEY, JSON.stringify(state.users));
     if (state.currentUser) {
@@ -70,12 +67,93 @@ const App: React.FC = () => {
     }
   }, [state.users, state.currentUser]);
 
-  // Sync Language with User profile
+  // Handle Location & Automated Timings
   useEffect(() => {
-    if (state.currentUser && state.users[state.currentUser]) {
-      setCurrentLanguage(state.users[state.currentUser].profile.preferredLanguage);
+    const updateLocationAndTimings = () => {
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition((pos) => {
+          const coords = new Coordinates(pos.coords.latitude, pos.coords.longitude);
+          const params = CalculationMethod.MuslimWorldLeague();
+          const date = new Date();
+          const prayerTimes = new PrayerTimes(coords, date, params);
+
+          const formatTime = (t: Date) => t.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+
+          const newTimings: PrayerTimings = {
+            Fajr: formatTime(prayerTimes.fajr),
+            Sunrise: formatTime(prayerTimes.sunrise),
+            Dhuhr: formatTime(prayerTimes.dhuhr),
+            Asr: formatTime(prayerTimes.asr),
+            Maghrib: formatTime(prayerTimes.maghrib),
+            Isha: formatTime(prayerTimes.isha),
+          };
+
+          setState(prev => ({ ...prev, location: { lat: pos.coords.latitude, lng: pos.coords.longitude }, todayTimings: newTimings }));
+        }, (err) => {
+          console.warn("Location access denied. Using defaults.", err);
+        });
+      }
+    };
+
+    updateLocationAndTimings();
+    // Re-check every 30 minutes for location change/date rollover
+    const interval = setInterval(updateLocationAndTimings, 1800000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Minute-by-minute Alarm System
+  useEffect(() => {
+    const checkAlarms = () => {
+      if (!state.todayTimings || !state.currentUser) return;
+      const user = state.users[state.currentUser];
+      if (!user.settings.notificationsEnabled) return;
+
+      const now = new Date();
+      const currentTime = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+
+      // Identify if current time matches any prayer
+      const matchedPrayer = PRAYERS.find(p => {
+        const timeKey = p.charAt(0).toUpperCase() + p.slice(1) as keyof PrayerTimings;
+        return state.todayTimings![timeKey] === currentTime;
+      });
+
+      if (matchedPrayer && lastAlertedPrayer.current !== `${matchedPrayer}-${currentTime}`) {
+        triggerAlert(matchedPrayer);
+        lastAlertedPrayer.current = `${matchedPrayer}-${currentTime}`;
+      }
+    };
+
+    const triggerAlert = (prayerName: string) => {
+      // 1. Notification
+      if (Notification.permission === 'granted') {
+        new Notification(t('prayerAlertTitle'), {
+          body: t('prayerAlertBody').replace('{prayer}', t(prayerName)),
+          icon: 'https://picsum.photos/192/192',
+        });
+      } else if (Notification.permission !== 'denied') {
+        Notification.requestPermission();
+      }
+
+      // 2. Audio (Beep/Chime)
+      if (!audioRef.current) {
+        audioRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+      }
+      audioRef.current.play().catch(e => console.log("Audio play blocked until interaction."));
+    };
+
+    const interval = setInterval(checkAlarms, 30000); // Check every 30 seconds
+    return () => clearInterval(interval);
+  }, [state.todayTimings, state.currentUser, state.users]);
+
+  // Sync Global Theme classes
+  useEffect(() => {
+    const isDark = state.currentUser ? state.users[state.currentUser].settings.theme === 'dark' : true;
+    if (isDark) {
+      document.body.classList.add('dark', 'dark-mode-active');
+    } else {
+      document.body.classList.remove('dark', 'dark-mode-active');
     }
-  }, [state.currentUser]);
+  }, [state.currentUser, state.users]);
 
   const updateActiveUser = (updater: (prev: UserData) => UserData) => {
     if (!state.currentUser) return;
@@ -97,11 +175,11 @@ const App: React.FC = () => {
         dhikrCount: 0, activeChallenges: INITIAL_DHIKRS, personalDhikrs: [],
         activeDhikrId: null, dhikrHistory: [], isHaydNifas: false, haydStartDate: null, healthPeriods: [],
         settings: { 
-          notificationsEnabled: false, 
-          locationEnabled: false, 
-          theme: 'light', 
-          qadaReminders: [],
-          prayerReminders: INITIAL_PRAYER_REMINDERS
+          notificationsEnabled: true, // Enabled by default
+          locationEnabled: true, 
+          theme: 'dark', 
+          ecoMode: false,
+          qadaReminders: []
         }
       };
       setState(prev => ({ ...prev, currentUser: username, users: { ...prev.users, [username]: newUserData } }));
@@ -110,6 +188,9 @@ const App: React.FC = () => {
     }
     setSubView(null);
     setActiveTab('home');
+    
+    // Request notification permission early
+    if ("Notification" in window) Notification.requestPermission();
   };
 
   const handleLogout = () => {
@@ -125,29 +206,14 @@ const App: React.FC = () => {
     });
   };
 
-  const updatePrayerReminder = (prayer: string, time: string, enabled: boolean) => {
-    updateActiveUser(user => {
-      const currentReminders = user.settings.prayerReminders || INITIAL_PRAYER_REMINDERS;
-      const updatedReminders = currentReminders.map(r => 
-        r.prayer === prayer ? { ...r, time, enabled } : r
-      );
-      return {
-        ...user,
-        settings: {
-          ...user.settings,
-          prayerReminders: updatedReminders
-        }
-      };
-    });
-  };
-
   const t = (key: string) => TRANSLATIONS[currentLanguage][key] || key;
   const compositeState = state.currentUser ? { ...state.users[state.currentUser], todayTimings: state.todayTimings } : null;
 
   // Render Logic
   if (!state.currentUser) {
+    const isDark = true;
     return (
-      <div className="app-viewport animate-fade-in">
+      <div className={`app-viewport ${isDark ? 'dark bg-slate-950' : 'bg-ivory'} animate-fade-in`}>
         {subView === 'auth' ? (
           <Login onLogin={handleLogin} t={t} initialLanguage={currentLanguage} users={state.users} onBack={() => setSubView(null)} />
         ) : (
@@ -219,13 +285,15 @@ const App: React.FC = () => {
           </div>
         </div>
       );
-      case 'account': return <MyAccount state={compositeState!} setCurrentView={setSubView} t={t} onLogout={handleLogout} toggleTheme={() => updateActiveUser(u => ({ ...u, settings: { ...u.settings, theme: u.settings.theme === 'dark' ? 'light' : 'dark' } }))} toggleNotifications={() => updateActiveUser(u => ({ ...u, settings: { ...u.settings, notificationsEnabled: !u.settings.notificationsEnabled } }))} updatePrayerReminder={updatePrayerReminder} />;
+      case 'account': return <MyAccount state={compositeState!} setCurrentView={setSubView} t={t} onLogout={handleLogout} toggleTheme={() => updateActiveUser(u => ({ ...u, settings: { ...u.settings, theme: u.settings.theme === 'dark' ? 'light' : 'dark' } }))} toggleEcoMode={() => updateActiveUser(u => ({ ...u, settings: { ...u.settings, ecoMode: !u.settings.ecoMode } }))} toggleNotifications={() => updateActiveUser(u => ({ ...u, settings: { ...u.settings, notificationsEnabled: !u.settings.notificationsEnabled } }))} />;
       default: return null;
     }
   };
 
+  const isDarkMode = compositeState ? compositeState.settings.theme === 'dark' : true;
+
   return (
-    <div className={`app-viewport ${compositeState?.settings.theme === 'dark' ? 'dark' : ''} bg-ivory dark:bg-slate-950`} dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}>
+    <div className={`app-viewport ${isDarkMode ? 'dark bg-slate-950' : 'bg-ivory'}`} dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}>
       <main className="flex-1 overflow-hidden relative w-full h-full flex flex-col">
         {renderView()}
       </main>
