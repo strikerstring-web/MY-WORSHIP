@@ -21,53 +21,97 @@ const FardPrayers: React.FC<FardPrayersProps> = ({ state, updatePrayerStatus, to
 
   const handleToggle = (prayer: any, type: 'fard' | 'sunnah') => {
     if (type === 'fard') {
-      const status = fardLogs[prayer] === PrayerStatus.COMPLETED ? PrayerStatus.PENDING : PrayerStatus.COMPLETED;
-      updatePrayerStatus(today, prayer, status);
+      const currentStatus = fardLogs[prayer as keyof typeof fardLogs];
+      // Cycle: Pending -> Completed -> Missed -> Pending
+      let nextStatus: PrayerStatus = PrayerStatus.PENDING;
+      if (currentStatus === PrayerStatus.PENDING) nextStatus = PrayerStatus.COMPLETED;
+      else if (currentStatus === PrayerStatus.COMPLETED) nextStatus = PrayerStatus.MISSED;
+      else if (currentStatus === PrayerStatus.MISSED) nextStatus = PrayerStatus.PENDING;
+      
+      updatePrayerStatus(today, prayer, nextStatus);
     } else {
       toggleSunnahStatus(today, prayer);
     }
   };
 
   return (
-    <div className="h-full flex flex-col bg-[#fdfbf7] dark:bg-slate-900 overflow-hidden">
-      <header className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl px-6 py-4 flex flex-col gap-4 z-10 shrink-0 border-b border-slate-100/50 dark:border-slate-800/50">
-        <div className="flex justify-between items-center w-full content-limit">
-          <div>
-            <h1 className="text-2xl font-black text-emerald-950 dark:text-emerald-50 tracking-tighter">{t('fard')}</h1>
-            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Spiritual Momentum</p>
+    <div className="h-full flex flex-col bg-[#fdfbf7] dark:bg-slate-950 overflow-hidden">
+      <header className="bg-gradient-to-br from-emerald-900 via-teal-900 to-emerald-950 px-6 pt-12 pb-8 flex flex-col gap-6 z-10 shrink-0 rounded-b-[40px] shadow-2xl relative">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gold-500/5 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+        <div className="flex justify-between items-center w-full content-limit relative z-10">
+          <div className="flex flex-col">
+            <h1 className="text-2xl font-black text-white tracking-tight">{t('fard')}</h1>
+            <p className="text-[9px] font-black text-emerald-300 uppercase tracking-widest mt-1">Daily Divine Schedule</p>
           </div>
-          <div className="flex bg-slate-100/50 dark:bg-slate-800 p-1 rounded-xl">
-            <button onClick={() => setActiveTab('fard')} className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === 'fard' ? 'bg-white dark:bg-slate-700 text-emerald-900 dark:text-emerald-50 shadow-sm' : 'text-slate-400'}`}>{t('fard')}</button>
-            <button onClick={() => setActiveTab('sunnah')} className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === 'sunnah' ? 'bg-white dark:bg-slate-700 text-emerald-900 dark:text-emerald-50 shadow-sm' : 'text-slate-400'}`}>{t('sunnah')}</button>
+          <div className="bg-white/10 p-1.5 rounded-2xl border border-white/10 backdrop-blur-md">
+             <div className="flex">
+               <button onClick={() => setActiveTab('fard')} className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'fard' ? 'bg-white text-emerald-900 shadow-lg' : 'text-white/40'}`}>{t('fard')}</button>
+               <button onClick={() => setActiveTab('sunnah')} className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'sunnah' ? 'bg-white text-emerald-900 shadow-lg' : 'text-white/40'}`}>{t('sunnah')}</button>
+             </div>
           </div>
         </div>
       </header>
 
-      <div className="scroll-container px-4 pt-4 space-y-3 w-full flex flex-col items-center">
-        <div className="w-full content-limit space-y-3">
+      <div className="scroll-container px-6 pt-8 space-y-4 w-full flex flex-col items-center no-scrollbar">
+        <div className="w-full content-limit space-y-3 pb-24">
           {(activeTab === 'fard' ? PRAYERS : SUNNAH_PRAYERS).map((p, idx) => {
-            const isDone = activeTab === 'fard' ? fardLogs[p as any] === PrayerStatus.COMPLETED : sunnahLogs.includes(p);
+            const status = activeTab === 'fard' ? fardLogs[p as keyof typeof fardLogs] : (sunnahLogs.includes(p) ? PrayerStatus.COMPLETED : PrayerStatus.PENDING);
+            const isDone = status === PrayerStatus.COMPLETED;
+            const isMissed = status === PrayerStatus.MISSED;
             const time = activeTab === 'fard' ? state.todayTimings?.[p.charAt(0).toUpperCase() + p.slice(1) as keyof PrayerTimings] : null;
-            const themes = ['emerald', 'teal', 'sky', 'blue', 'indigo', 'violet'];
-            const theme = themes[idx % themes.length];
-
+            
             return (
-              <div 
+              <button 
                 key={p} 
                 onClick={() => !isExcused && handleToggle(p, activeTab)} 
-                className={`card-premium !p-4 flex items-center justify-between btn-ripple border ${isDone ? `border-${theme}-200 bg-${theme}-50/5` : 'border-transparent dark:bg-slate-800'} ${isExcused ? 'opacity-30 grayscale' : ''}`}
+                className={`card-premium !p-5 flex items-center justify-between border-2 transition-all duration-500 animate-fade-up ${
+                  isDone 
+                    ? `border-emerald-500 dark:border-emerald-500/30 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/10 dark:to-teal-900/10 shadow-lg shadow-emerald-500/10 animate-pop` 
+                    : isMissed 
+                    ? `border-rose-400 dark:border-rose-900/30 bg-rose-50/30 dark:bg-rose-950/20 shadow-sm`
+                    : 'border-slate-50 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-emerald-200'
+                } ${isExcused ? 'opacity-30 grayscale cursor-not-allowed' : 'cursor-pointer active:scale-95'}`}
+                style={{ animationDelay: `${idx * 0.05}s` }}
               >
-                <div className="flex items-center gap-4">
-                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-xl ${isDone ? `bg-gradient-to-br from-${theme}-500 to-${theme}-700 text-white shadow-lg` : 'bg-slate-100 dark:bg-slate-700 text-slate-300'}`}>
-                    <i className={`fas ${isDone ? 'fa-check-circle' : 'fa-kaaba'}`}></i>
+                <div className="flex items-center gap-5">
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-xl transition-all duration-500 ${
+                    isDone 
+                      ? `bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-xl shadow-emerald-500/20 scale-110` 
+                      : isMissed
+                      ? `bg-rose-500 text-white shadow-md`
+                      : 'bg-slate-50 dark:bg-slate-800 text-slate-300'
+                  }`}>
+                    <i className={`fas ${isDone ? 'fa-check' : isMissed ? 'fa-xmark' : 'fa-kaaba'}`}></i>
                   </div>
-                  <div>
-                    <h3 className="font-black text-emerald-950 dark:text-emerald-50 text-base tracking-tight">{t(p)}</h3>
-                    {time && <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{time}</p>}
+                  <div className="text-left">
+                    <h3 className="font-black text-slate-900 dark:text-emerald-50 text-base tracking-tight">{t(p)}</h3>
+                    <div className="flex items-center gap-2 mt-0.5">
+                       {time && <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{time}</p>}
+                       {isDone && (
+                         <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <i className="fas fa-sparkles text-[7px]"></i> {t('completed')}
+                         </span>
+                       )}
+                       {isMissed && (
+                         <div className="flex items-center gap-1.5">
+                            <span className="text-[9px] font-black text-rose-600 dark:text-rose-400 uppercase tracking-widest bg-rose-100 dark:bg-rose-900/30 px-2 py-0.5 rounded-full">
+                               {t('missed')}
+                            </span>
+                            <span className="text-[8px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-[0.2em] flex items-center gap-1">
+                               <i className="fas fa-history text-[7px]"></i> Qada
+                            </span>
+                         </div>
+                       )}
+                    </div>
                   </div>
                 </div>
-                {isDone && <span className={`text-[8px] font-black text-${theme}-600 bg-${theme}-50 px-3 py-1 rounded-full uppercase tracking-widest`}>Done</span>}
-              </div>
+                
+                {!isExcused && (
+                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${isDone ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600' : isMissed ? 'bg-rose-100 dark:bg-rose-900/30 text-rose-600' : 'bg-slate-50 dark:bg-slate-800 text-slate-200'}`}>
+                      <i className={`fas ${isDone ? 'fa-star' : isMissed ? 'fa-rotate-right' : 'fa-plus'} text-[10px]`}></i>
+                   </div>
+                )}
+              </button>
             );
           })}
         </div>

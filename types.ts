@@ -1,4 +1,3 @@
-
 export type Language = 'en' | 'ml' | 'ta' | 'ar';
 
 export enum PrayerStatus {
@@ -80,6 +79,12 @@ export interface QadaReminder {
   enabled: boolean;
 }
 
+export interface PrayerReminder {
+  prayer: string;
+  time: string;
+  enabled: boolean;
+}
+
 export interface HealthPeriod {
   id: string;
   start: string; // ISO Date string
@@ -106,6 +111,7 @@ export interface UserData {
     locationEnabled: boolean;
     theme: 'light' | 'dark';
     qadaReminders: QadaReminder[];
+    prayerReminders: PrayerReminder[];
   };
 }
 

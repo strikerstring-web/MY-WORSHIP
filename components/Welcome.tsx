@@ -1,7 +1,5 @@
-
 import React from 'react';
 import { Language } from '../types';
-import Logo from './Logo';
 
 interface WelcomeProps {
   onEnter: () => void;
@@ -11,47 +9,69 @@ interface WelcomeProps {
 }
 
 const Welcome: React.FC<WelcomeProps> = ({ onEnter, language, setLanguage, t }) => {
-  const languages: { code: Language; label: string; native: string }[] = [
-    { code: 'ar', label: 'Arabic', native: 'العربية' },
-    { code: 'en', label: 'English', native: 'English' },
-    { code: 'ml', label: 'Malayalam', native: 'മലയാളം' },
-    { code: 'ta', label: 'Tamil', native: 'தமிழ்' },
+  const languages: { code: Language; label: string; icon: string; color: string }[] = [
+    { code: 'ar', label: 'العربية', icon: 'fa-kaaba', color: 'from-emerald-400 to-emerald-600' },
+    { code: 'en', label: 'English', icon: 'fa-globe', color: 'from-sky-400 to-sky-600' },
+    { code: 'ml', label: 'മലയാളം', icon: 'fa-language', color: 'from-violet-400 to-violet-600' },
+    { code: 'ta', label: 'தமிழ்', icon: 'fa-feather', color: 'from-amber-400 to-amber-600' },
   ];
 
   return (
-    <div className="flex flex-col items-center justify-between h-full w-full p-6 text-center relative overflow-hidden bg-[#000d1a]">
-      <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
-        <div className="absolute top-[-10%] right-[-10%] w-[400px] h-[400px] bg-emerald-600/5 rounded-full blur-[100px] animate-pulse"></div>
-        <div className="absolute bottom-[-10%] left-[-10%] w-[300px] h-[300px] bg-sky-600/5 rounded-full blur-[80px] animate-pulse" style={{ animationDelay: '2s' }}></div>
+    <div className="flex flex-col items-center justify-between h-full w-full p-6 text-center relative overflow-hidden bg-mesh">
+      {/* Decorative ambient light */}
+      <div className="absolute inset-0 pointer-events-none z-0">
+        <div className="absolute top-[20%] left-[-10%] w-[350px] h-[350px] bg-emerald-500/10 rounded-full blur-[120px] animate-pulse"></div>
+        <div className="absolute bottom-[10%] right-[-10%] w-[300px] h-[300px] bg-teal-500/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '3s' }}></div>
       </div>
 
-      <div className="flex-1 flex flex-col items-center justify-center space-y-8 z-10 w-full animate-fade-up">
-        <div className="relative group">
-          <div className="absolute -inset-6 bg-[#e9c46a]/10 rounded-full blur-3xl group-hover:bg-[#e9c46a]/20 transition-all opacity-0 group-hover:opacity-100"></div>
-          <Logo size="xl" withText className="transition-transform group-hover:scale-105 duration-500" />
-        </div>
-
-        <div className="space-y-1 w-full max-w-xs">
-          <h1 className="text-4xl font-black text-white tracking-tighter">Ibadathi</h1>
-          <p className="text-slate-400 text-[10px] font-black leading-tight px-6 opacity-60 uppercase tracking-widest">
+      <div className="z-10 w-full max-w-sm flex-1 flex flex-col items-center justify-center pt-4">
+        {/* Typographic Branding */}
+        <div className="animate-fade-up mt-8 mb-12 flex flex-col items-center">
+          <span className="text-6xl font-black text-white dark:text-emerald-50 arabic-font block tracking-tight leading-none mb-4" dir="rtl">
+            عبادتي
+          </span>
+          <div className="flex items-center gap-3">
+            <span className="h-px w-6 bg-emerald-500/40"></span>
+            <p className="text-emerald-500 dark:text-emerald-400 font-black text-[11px] uppercase tracking-[0.6em]">
+              Ibadathi
+            </p>
+            <span className="h-px w-6 bg-emerald-500/40"></span>
+          </div>
+          <p className="text-slate-400 text-[11px] font-medium max-w-[240px] mx-auto leading-relaxed mt-8 opacity-70">
             {t('welcomeSub')}
           </p>
         </div>
 
-        <div className="w-full max-w-[280px] space-y-4">
-          <p className="text-[8px] font-black text-white/30 uppercase tracking-[0.3em]">{t('selectLanguage')}</p>
-          <div className="grid grid-cols-2 gap-3">
+        {/* Language Selection Grid */}
+        <div className="w-full space-y-4 animate-fade-up stagger-1">
+          <div className="flex items-center justify-center gap-3">
+            <span className="h-px w-5 bg-white/10"></span>
+            <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.25em]">{t('selectLanguage')}</p>
+            <span className="h-px w-5 bg-white/10"></span>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-2.5 max-w-[260px] mx-auto">
             {languages.map((lang) => (
               <button
                 key={lang.code}
                 onClick={() => setLanguage(lang.code)}
-                className={`flex flex-col items-center justify-center p-3 rounded-2xl border transition-all duration-300 active:scale-95 ${
-                  language === lang.code ? 'bg-white border-white shadow-xl' : 'bg-white/5 border-white/5 hover:border-white/10'
+                className={`relative p-3 rounded-[1.25rem] flex flex-col items-center gap-2 transition-all duration-500 active:scale-95 border-2 ${
+                  language === lang.code 
+                    ? `bg-white/5 border-emerald-500 shadow-[0_8px_16px_rgba(16,185,129,0.1)]` 
+                    : 'bg-white/[0.01] border-white/5 hover:border-white/10'
                 }`}
               >
-                <span className={`text-[7px] uppercase font-black tracking-widest mb-1 ${language === lang.code ? 'text-emerald-900' : 'text-slate-500'}`}>{lang.label}</span>
-                <span className={`text-xs font-black ${language === lang.code ? 'text-emerald-900' : 'text-slate-200'} ${lang.code === 'ar' ? 'arabic-font text-lg' : ''}`}>
-                  {lang.native}
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs transition-all duration-500 ${
+                  language === lang.code 
+                    ? `bg-gradient-to-br ${lang.color} text-white scale-105 shadow-md` 
+                    : 'bg-white/5 text-slate-500'
+                }`}>
+                  <i className={`fas ${lang.icon}`}></i>
+                </div>
+                <span className={`text-[9px] font-bold transition-colors duration-500 ${
+                  language === lang.code ? 'text-white' : 'text-slate-500'
+                }`}>
+                  {lang.label}
                 </span>
               </button>
             ))}
@@ -59,12 +79,20 @@ const Welcome: React.FC<WelcomeProps> = ({ onEnter, language, setLanguage, t }) 
         </div>
       </div>
 
-      <div className="w-full max-w-[280px] pb-10 z-10 space-y-4 animate-fade-up">
-        <button onClick={onEnter} className="w-full bg-gradient-to-r from-emerald-600 to-teal-700 text-white font-black py-4 rounded-2xl shadow-2xl flex items-center justify-center gap-3 active:scale-[0.98] transition-all border border-white/10">
-          <span className="tracking-widest uppercase text-[11px] font-black">{t('getStarted')}</span>
-          <i className="fas fa-arrow-right text-[8px] opacity-40"></i>
+      {/* Primary CTA */}
+      <div className="w-full max-w-[260px] pb-8 z-10 animate-fade-up stagger-2">
+        <button 
+          onClick={onEnter}
+          className="group relative w-full h-12 rounded-[1.15rem] overflow-hidden transition-all duration-500 active:scale-95 shadow-2xl shadow-emerald-950/40"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-teal-700"></div>
+          <div className="relative flex items-center justify-center gap-3">
+            <span className="text-white tracking-[0.3em] uppercase text-[9px] font-black">
+              {t('getStarted')}
+            </span>
+            <i className="fas fa-arrow-right text-[7px] text-white/50 group-hover:translate-x-1 transition-transform"></i>
+          </div>
         </button>
-        <p className="text-slate-600 text-[7px] font-black uppercase tracking-[0.4em] opacity-40">DIGITAL WORSHIP • 1446 AH</p>
       </div>
     </div>
   );

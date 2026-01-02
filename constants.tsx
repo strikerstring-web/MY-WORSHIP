@@ -1,4 +1,3 @@
-
 import { Language } from './types';
 
 export const PRAYERS = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'] as const;
@@ -48,7 +47,7 @@ export const HADITHS: MultiLangHadith[] = [
     arabic: "الدِّينُ النَّصِيحَةُ",
     en: "Religion is sincere advice.",
     ml: "മതം ഗുണകാംക്ഷയാണ്.",
-    ta: "மார்க்கம் என்பது നற்பോதனையாகും.",
+    ta: "மார்க்கம் என்பது நற்போதனையாகும்.",
     ar: "الدين النصيحة.",
     reference: "Sahih Muslim 55"
   },
@@ -67,6 +66,22 @@ export const HADITHS: MultiLangHadith[] = [
     ta: "அல்லாஹ்வுக்கு மிகவும் விருப்பமான செயல் சிறியதாக இருந்தாலும் தொடர்ந்து செய்யப்படுவதே ஆகும்.",
     ar: "أحب الأعمال إلى الله أدومها وإن قل.",
     reference: "Sahih al-Bukhari 6464"
+  },
+  {
+    arabic: "لاَ يُؤْمِنُ أَحَدُكُمْ حَتَّى يُحِبَّ لأَخِيهِ مَا يُحِبُّ لِنَفْسِهِ",
+    en: "None of you will believe until you love for your brother what you love for yourself.",
+    ml: "താൻ ഇഷ്ടപ്പെടുന്നത് തന്റെ സഹോദരനും ഇഷ്ടപ്പെടുന്നത് വരെ നിങ്ങളിലാരും പൂർണ്ണ വിശ്വാസിയാവുകയില്ല.",
+    ta: "உங்களில் ஒருவர் தனக்கு விரும்புவதையே தன் சகோதரனுக்கும் விரும்பும் வரை அவர் (முழுமையான) இறைநம்பிக்கையாளர் ஆக முடியாது.",
+    ar: "لا يؤمن أحدكم حتى يحب لأخيه ما يحب لنفسه.",
+    reference: "Sahih al-Bukhari 13"
+  },
+  {
+    arabic: "مَنْ كَانَ يُؤْمِنُ بِاللَّهِ وَالْيَوْمِ الآخِرِ فَلْيَقُلْ خَيْرًا أَوْ لِيَصْمُتْ",
+    en: "Whoever believes in Allah and the Last Day, let him speak goodness or remain silent.",
+    ml: "അല്ലാഹുവിലും അന്ത്യദിനത്തിലും വിശ്വസിക്കുന്നവൻ നല്ലത് സംസാരിക്കട്ടെ, അല്ലെങ്കിൽ മിണ്ടാതിരിക്കട്ടെ.",
+    ta: "அல்லாஹ்வையும் மறுமை நாளையும் நம்புபவர் நல்லதைப் பேசட்டும் அல்லது வாய்மூடி இருக்கட்டும்.",
+    ar: "من كان يؤمن بالله واليوم الآخر فليقل خيرا أو ليصمت.",
+    reference: "Sahih al-Bukhari 6018"
   }
 ];
 
@@ -117,7 +132,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     progress: 'Progress',
     missedPrayers: 'Missed Prayers',
     back: 'Back',
-    hadithTitle: 'Daily Inspiration',
+    hadithTitle: 'Hadith of the Day',
     qibla: 'Qibla Finder',
     remembranceVerse: "Verily, in the remembrance of Allah do hearts find rest.",
     quranVirtue: "Virtues of Recitation",
@@ -228,7 +243,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     progress: 'التقدم',
     missedPrayers: 'الصلوات الفائتة',
     back: 'الرجوع',
-    hadithTitle: 'إلهام اليوم',
+    hadithTitle: 'حديث اليوم',
     qibla: 'بوصلة القبلة',
     remembranceVerse: "ألا بذكر الله تطمئن القلوب",
     quranVirtue: "فضائل التلاوة",
@@ -339,7 +354,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     progress: 'പുരോഗതി',
     missedPrayers: 'നഷ്ടപ്പെട്ട നിസ്കാരങ്ങൾ',
     back: 'പിന്നിലേക്ക്',
-    hadithTitle: 'ഇന്നത്തെ പ്രചോദനം',
+    hadithTitle: 'ഇന്നത്തെ ഹദീസ്',
     qibla: 'ഖിബ്‌ല ഫൈൻഡർ',
     remembranceVerse: "അല്ലാഹുവെക്കുറിച്ചുള്ള ഓർമ്മകൊണ്ടാണ് ഹൃദയങ്ങൾ ശാന്തമാകുന്നത്.",
     quranVirtue: "ഖുർആൻ പാരായണത്തിന്റെ ഗുണങ്ങൾ",
@@ -450,7 +465,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     progress: 'முன்னேற்றம்',
     missedPrayers: 'தவறிய தொழுகைகள்',
     back: 'பின்செல்',
-    hadithTitle: 'இன்றைய உத்வேகம்',
+    hadithTitle: 'இன்றைய ஹதீஸ்',
     qibla: 'கிப்லா திசை காட்டி',
     remembranceVerse: "நிச்சயமாக அல்லாஹ்வை நினைவுகூர்வதன் மூலமே இதயங்கள் அமைதியடைகின்றன.",
     quranVirtue: "குர்ஆன் ஓதுவதன் சிறப்புகள்",

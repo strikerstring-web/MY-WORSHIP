@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 interface LogoProps {
@@ -9,58 +8,57 @@ interface LogoProps {
 
 const Logo: React.FC<LogoProps> = ({ className = '', size = 'md', withText = false }) => {
   const sizeMap = {
-    sm: 'w-10',
-    md: 'w-16',
-    lg: 'w-32',
-    xl: 'w-48'
+    sm: 'w-8 h-8',
+    md: 'w-14 h-14',
+    lg: 'w-24 h-24',
+    xl: 'w-32 h-32'
   };
 
   return (
     <div className={`flex flex-col items-center justify-center ${className}`}>
-      <div className={`${sizeMap[size]} aspect-square relative flex items-center justify-center`}>
-        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-2xl">
-          {/* Main Background Glow (Subtle) */}
-          <circle cx="50" cy="50" r="45" fill="rgba(10, 74, 82, 0.05)" />
+      <div className={`${sizeMap[size]} aspect-square relative flex items-center justify-center overflow-hidden rounded-[24%] bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800`}>
+        {/* Minimal Flat Vector SVG */}
+        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full p-3">
           
-          {/* Deep Teal Crescent */}
-          <path 
-            d="M 50 15 A 35 35 0 1 0 50 85 A 28 28 0 1 1 50 15" 
-            fill="#1a6d75" 
-            transform="rotate(-15 50 50)"
-          />
+          {/* THE KAABA (Left) */}
+          {/* Main Block (Black) */}
+          <path d="M 12 65 L 35 68 V 45 L 12 42 Z" fill="#000000" />
+          <path d="M 35 68 L 45 65 V 42 L 35 45 Z" fill="#1A1A1A" />
+          <path d="M 12 42 L 22 39 L 45 42 L 35 45 Z" fill="#2D2D2D" />
           
-          {/* Golden Mihrab Arch */}
-          <g transform="translate(0, 5)">
-            {/* The Arch Body */}
-            <path 
-              d="M 38 70 L 38 45 C 38 32 62 32 62 45 L 62 70" 
-              fill="none" 
-              stroke="#e9c46a" 
-              strokeWidth="4.5" 
-              strokeLinecap="round"
-            />
-            {/* Dome Top */}
-            <path 
-              d="M 45 35 L 50 28 L 55 35" 
-              fill="#e9c46a"
-            />
-            {/* Small Top Finial */}
-            <path 
-              d="M 49 25 A 2 2 0 1 1 51 25" 
-              fill="none" 
-              stroke="#e9c46a" 
-              strokeWidth="1"
-            />
-            <circle cx="50" cy="23" r="1.2" fill="#e9c46a" />
-          </g>
+          {/* Gold Band (Solid Gold) */}
+          <path d="M 12 48 L 35 51 L 45 48 L 45 50 L 35 53 L 12 50 Z" fill="#FFD700" />
+
+          {/* MASJID NABAWI (Right) */}
+          {/* Green Dome - Pure geometric arc */}
+          <path d="M 50 65 C 50 48 58 42 68 42 C 78 42 86 48 86 65 H 50 Z" fill="#00843D" />
+          
+          {/* Crescent on Top */}
+          <path d="M 68 38 A 2 2 0 1 1 68 34 A 2.5 2.5 0 1 0 68 38 Z" fill="#FFD700" />
+
+          {/* Simple Minaret */}
+          <rect x="78" y="44" width="4" height="21" fill="#E2E8F0" />
+          <rect x="77" y="44" width="6" height="2" fill="#00843D" />
+          <path d="M 78 44 L 80 40 L 82 44 Z" fill="#00843D" />
+          <circle cx="80" cy="38" r="1" fill="#FFD700" />
+
         </svg>
       </div>
       
       {withText && (
-        <div className="mt-2 text-center">
-          <span className="text-3xl font-black text-[#e9c46a] arabic-font block leading-tight tracking-widest drop-shadow-md" dir="rtl">
+        <div className="mt-4 text-center animate-fade-up">
+          <span className="text-2xl font-black text-slate-900 dark:text-emerald-50 arabic-font block tracking-tight leading-none" dir="rtl">
             عبادتي
           </span>
+          <div className="mt-2.5 flex flex-col items-center">
+            <div className="flex items-center gap-2.5">
+              <span className="h-px w-4 bg-emerald-500/20"></span>
+              <p className="text-emerald-600 dark:text-emerald-400 font-extrabold text-[9px] uppercase tracking-[0.4em]">
+                Ibadathi
+              </p>
+              <span className="h-px w-4 bg-emerald-500/20"></span>
+            </div>
+          </div>
         </div>
       )}
     </div>
