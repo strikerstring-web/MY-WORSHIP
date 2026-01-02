@@ -34,6 +34,8 @@ export interface FastingLog {
 export interface QuranProgress {
   surah: string;
   ayah: string;
+  // Added juz property to track Quran progress by Juz
+  juz: string;
   lastUpdated: string;
 }
 
