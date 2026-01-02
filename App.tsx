@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { AppState, UserProfile, UserData, Language, PrayerStatus, DhikrChallenge, PersonalDhikr, PrayerTimings, QadaReminder, DhikrHistoryEntry, HealthPeriod, FastingLog, QuranProgress } from './types';
 import { TRANSLATIONS, PRAYERS } from './constants';
@@ -13,6 +14,7 @@ import Welcome from './components/Welcome';
 import QiblaFinder from './components/QiblaFinder';
 import AboutHelp from './components/AboutHelp';
 import MyAccount from './components/MyAccount';
+import AuthSelection from './components/AuthSelection';
 
 const USERS_DB_KEY = 'ibadathi_v1_users_database';
 const SESSION_KEY = 'ibadathi_v1_active_session';
@@ -47,6 +49,7 @@ const App: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<'home' | 'prayer' | 'tracker' | 'challenges' | 'account'>('home');
   const [subView, setSubView] = useState<string | null>(null);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [isAuth, setIsAuth] = useState<boolean>(!!state.currentUser);
 
   useEffect(() => {
@@ -60,6 +63,16 @@ const App: React.FC = () => {
     }
   }, [state.users, state.currentUser]);
 
+  // Handle Dark Mode Class
+  useEffect(() => {
+    const theme = currentUserData?.settings.theme || 'light';
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [currentUserData?.settings.theme]);
+
   const t = (key: string) => TRANSLATIONS[currentLanguage][key] || key;
 
   const handleLogin = (profile: UserProfile, isNew: boolean) => {
@@ -71,7 +84,7 @@ const App: React.FC = () => {
         quranProgress: { surah: '', ayah: '', juz: '', lastUpdated: '' },
         dhikrCount: 0, activeChallenges: INITIAL_DHIKRS, personalDhikrs: [],
         activeDhikrId: null, dhikrHistory: [], isHaydNifas: false, haydStartDate: null, healthPeriods: [],
-        settings: { notificationsEnabled: false, locationEnabled: false, qadaReminders: [] }
+        settings: { notificationsEnabled: false, locationEnabled: false, theme: 'light', qadaReminders: [] }
       };
       setState(prev => ({ ...prev, currentUser: username, users: { ...prev.users, [username]: newUserData } }));
     } else {
@@ -112,14 +125,44 @@ const App: React.FC = () => {
     });
   };
 
+  const toggleTheme = () => {
+    updateActiveUser(u => ({
+      ...u,
+      settings: { ...u.settings, theme: u.settings.theme === 'dark' ? 'light' : 'dark' }
+    }));
+  };
+
+  const toggleNotifications = () => {
+    updateActiveUser(u => ({
+      ...u,
+      settings: { ...u.settings, notificationsEnabled: !u.settings.notificationsEnabled }
+    }));
+  };
+
   if (!isAuth) {
     return (
-      <div className="app-viewport animate-fade-in">
+      <div className="app-viewport animate-fade-in bg-slate-900">
         <main className="h-full flex flex-col w-full overflow-hidden">
-          {subView === 'login' ? (
-            <Login onLogin={handleLogin} t={t} initialLanguage={currentLanguage} users={state.users} />
+          {subView === 'auth-form' ? (
+            <Login 
+              onLogin={handleLogin} 
+              t={t} 
+              initialLanguage={currentLanguage} 
+              users={state.users} 
+              initialMode={authMode}
+              onBack={() => setSubView('auth-choice')}
+            />
+          ) : subView === 'auth-choice' ? (
+            <AuthSelection 
+              t={t} 
+              onSelect={(mode) => {
+                setAuthMode(mode);
+                setSubView('auth-form');
+              }}
+              onBack={() => setSubView(null)}
+            />
           ) : (
-            <Welcome onEnter={() => setSubView('login')} language={currentLanguage} setLanguage={setCurrentLanguage} t={t} />
+            <Welcome onEnter={() => setSubView('auth-choice')} language={currentLanguage} setLanguage={setCurrentLanguage} t={t} />
           )}
         </main>
       </div>
@@ -138,7 +181,7 @@ const App: React.FC = () => {
 
     switch (activeTab) {
       case 'home':
-        return <Dashboard state={compositeState} setCurrentView={setSubView} t={t} onLogout={handleLogout} toggleNotifications={() => {}} updatePrayerStatus={updatePrayerStatus} />;
+        return <Dashboard state={compositeState} setCurrentView={setSubView} t={t} onLogout={handleLogout} toggleNotifications={toggleNotifications} updatePrayerStatus={updatePrayerStatus} />;
       case 'prayer':
         return <FardPrayers state={compositeState} updatePrayerStatus={updatePrayerStatus} toggleSunnahStatus={toggleSunnahStatus} setCurrentView={setSubView} t={t} />;
       case 'challenges':
@@ -167,37 +210,44 @@ const App: React.FC = () => {
       case 'tracker':
         return (
           <div className="scroll-container p-6 w-full content-limit">
-            <h2 className="text-3xl font-black text-emerald-900 mb-6">My Progress</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div onClick={() => setSubView('quran')} className="card-premium flex items-center gap-4 btn-ripple cursor-pointer">
-                <div className="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center text-2xl"><i className="fas fa-book-open"></i></div>
+            <h2 className="text-3xl font-black text-emerald-900 dark:text-emerald-100 mb-6">My Progress</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="card-premium dark:bg-slate-800 dark:border-slate-700 flex items-center gap-4 bg-gradient-to-br from-emerald-50/50 to-white">
+                <div className="w-14 h-14 bg-emerald-500 text-white rounded-2xl flex items-center justify-center text-2xl shadow-lg shadow-emerald-500/20"><i className="fas fa-fire"></i></div>
                 <div className="flex-1">
-                  <h3 className="font-black text-emerald-900 text-lg">{t('quran')}</h3>
+                  <h3 className="font-black text-emerald-900 dark:text-emerald-50 text-lg">Streak</h3>
+                  <p className="text-xl font-black text-emerald-600 tabular-nums">{compositeState.dhikrCount.toLocaleString()}</p>
+                </div>
+              </div>
+              <div onClick={() => setSubView('quran')} className="card-premium dark:bg-slate-800 dark:border-slate-700 flex items-center gap-4 btn-ripple cursor-pointer">
+                <div className="w-14 h-14 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center text-2xl"><i className="fas fa-book-open"></i></div>
+                <div className="flex-1">
+                  <h3 className="font-black text-emerald-900 dark:text-emerald-50 text-lg">{t('quran')}</h3>
                   <p className="text-[10px] text-slate-400 uppercase tracking-widest">{compositeState.quranProgress.surah || 'Not started'}</p>
                 </div>
                 <i className="fas fa-chevron-right text-slate-300 text-xs"></i>
               </div>
-              <div onClick={() => setSubView('fasting')} className="card-premium flex items-center gap-4 btn-ripple cursor-pointer">
-                <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-2xl"><i className="fas fa-moon"></i></div>
+              <div onClick={() => setSubView('fasting')} className="card-premium dark:bg-slate-800 dark:border-slate-700 flex items-center gap-4 btn-ripple cursor-pointer">
+                <div className="w-14 h-14 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center text-2xl"><i className="fas fa-moon"></i></div>
                 <div className="flex-1">
-                  <h3 className="font-black text-emerald-900 text-lg">{t('fasting')}</h3>
+                  <h3 className="font-black text-emerald-900 dark:text-emerald-50 text-lg">{t('fasting')}</h3>
                   <p className="text-[10px] text-slate-400 uppercase tracking-widest">Goal tracked</p>
                 </div>
                 <i className="fas fa-chevron-right text-slate-300 text-xs"></i>
               </div>
-              <div onClick={() => setSubView('qadah')} className="card-premium flex items-center gap-4 btn-ripple cursor-pointer">
-                <div className="w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center text-2xl"><i className="fas fa-calendar-check"></i></div>
+              <div onClick={() => setSubView('qadah')} className="card-premium dark:bg-slate-800 dark:border-slate-700 flex items-center gap-4 btn-ripple cursor-pointer">
+                <div className="w-14 h-14 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-2xl flex items-center justify-center text-2xl"><i className="fas fa-calendar-check"></i></div>
                 <div className="flex-1">
-                  <h3 className="font-black text-emerald-900 text-lg">{t('qadah')}</h3>
+                  <h3 className="font-black text-emerald-900 dark:text-emerald-50 text-lg">{t('qadah')}</h3>
                   <p className="text-[10px] text-slate-400 uppercase tracking-widest">Missed prayers log</p>
                 </div>
                 <i className="fas fa-chevron-right text-slate-300 text-xs"></i>
               </div>
               {compositeState.profile.sex === 'female' && (
-                <div onClick={() => setSubView('women')} className="card-premium flex items-center gap-4 btn-ripple cursor-pointer">
-                  <div className="w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center text-2xl"><i className="fas fa-leaf"></i></div>
+                <div onClick={() => setSubView('women')} className="card-premium dark:bg-slate-800 dark:border-slate-700 flex items-center gap-4 btn-ripple cursor-pointer">
+                  <div className="w-14 h-14 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-2xl flex items-center justify-center text-2xl"><i className="fas fa-leaf"></i></div>
                   <div className="flex-1">
-                    <h3 className="font-black text-emerald-900 text-lg">{t('womensSpace')}</h3>
+                    <h3 className="font-black text-emerald-900 dark:text-emerald-50 text-lg">{t('womensSpace')}</h3>
                     <p className="text-[10px] text-slate-400 uppercase tracking-widest">Period tracking</p>
                   </div>
                   <i className="fas fa-chevron-right text-slate-300 text-xs"></i>
@@ -207,19 +257,19 @@ const App: React.FC = () => {
           </div>
         );
       case 'account':
-        return <MyAccount state={compositeState} setCurrentView={setSubView} t={t} onLogout={handleLogout} />;
+        return <MyAccount state={compositeState} setCurrentView={setSubView} t={t} onLogout={handleLogout} toggleTheme={toggleTheme} toggleNotifications={toggleNotifications} />;
       default: return null;
     }
   };
 
   return (
-    <div className="app-viewport animate-fade-in" dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}>
+    <div className="app-viewport animate-fade-in bg-ivory dark:bg-slate-900 dark:text-slate-100" dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}>
       <main className="flex-1 overflow-hidden relative w-full h-full">
         {renderContent()}
       </main>
 
       {!subView && (
-        <nav className="bottom-nav">
+        <nav className="bottom-nav dark:bg-slate-900/95 dark:border-slate-800">
           <button onClick={() => setActiveTab('home')} className={`nav-item ${activeTab === 'home' ? 'active' : ''}`}>
             <i className="fas fa-house"></i>
             <span className="text-[10px] font-black uppercase tracking-tighter">Home</span>

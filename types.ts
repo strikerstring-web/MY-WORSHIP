@@ -104,6 +104,7 @@ export interface UserData {
   settings: {
     notificationsEnabled: boolean;
     locationEnabled: boolean;
+    theme: 'light' | 'dark';
     qadaReminders: QadaReminder[];
   };
 }

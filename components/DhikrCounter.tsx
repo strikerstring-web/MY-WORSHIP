@@ -29,100 +29,155 @@ const DhikrCounter: React.FC<DhikrCounterProps> = ({
 
   const handleIncrementChallenge = () => {
     if (!state.activeDhikrId || !activeChallenge) return;
-    if ('vibrate' in navigator) navigator.vibrate(40);
-    setTapAnimation(true); setTimeout(() => setTapAnimation(false), 100);
+    if ('vibrate' in navigator) navigator.vibrate(50);
+    setTapAnimation(true); setTimeout(() => setTapAnimation(false), 150);
     updateProgress(state.activeDhikrId, 1);
   };
 
   const handleIncrementPersonal = () => {
     if (!activePersonalId || !activePersonal) return;
-    if ('vibrate' in navigator) navigator.vibrate(50);
-    setTapAnimation(true); setTimeout(() => setTapAnimation(false), 100);
+    if ('vibrate' in navigator) navigator.vibrate(60);
+    setTapAnimation(true); setTimeout(() => setTapAnimation(false), 150);
     updatePersonalProgress(activePersonalId, 1);
   };
 
+  // Modern Counter View
   if (activeChallenge || activePersonal) {
     const title = activeChallenge ? t(activeChallenge.title) : activePersonal?.name;
     const current = activeChallenge ? activeChallenge.current : activePersonal?.sessionCount;
+    const target = activeChallenge ? activeChallenge.target : 0;
     const arabic = activeChallenge ? activeChallenge.arabic : '';
     const increment = activeChallenge ? handleIncrementChallenge : handleIncrementPersonal;
+    
+    // Choose a color theme based on the dhikr
+    const themeClass = activeChallenge?.id === 'salawat' ? 'from-emerald-700 to-emerald-950' : 
+                      activeChallenge?.id === 'astaghfirullah' ? 'from-slate-700 to-slate-900' :
+                      activeChallenge?.id === 'allahuakbar' ? 'from-amber-600 to-amber-900' :
+                      'from-emerald-800 to-teal-950';
 
     return (
-      <div className="h-full flex flex-col bg-emerald-900 text-white animate-fade-in">
-        <header className="p-6 pt-12 pb-4 flex items-center gap-4">
-          <button onClick={() => { setActiveDhikr(null); setActivePersonalId(null); }} className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 active:scale-90"><i className="fas fa-chevron-left"></i></button>
-          <h1 className="text-xl font-black truncate">{title}</h1>
+      <div className={`h-full flex flex-col bg-gradient-to-b ${themeClass} text-white animate-fade-in`}>
+        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
+           <div className="absolute top-1/4 -left-20 w-80 h-80 bg-white/20 rounded-full blur-3xl"></div>
+           <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
+        </div>
+
+        <header className="p-6 pt-12 pb-4 flex items-center justify-between relative z-10">
+          <button onClick={() => { setActiveDhikr(null); setActivePersonalId(null); }} className="w-12 h-12 bg-white/10 backdrop-blur-xl rounded-2xl flex items-center justify-center border border-white/20 active:scale-90 transition-all"><i className="fas fa-arrow-left"></i></button>
+          <div className="flex flex-col items-end">
+             <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">Current Session</span>
+             <p className="text-xl font-black tabular-nums">{current}</p>
+          </div>
         </header>
         
-        <div className="flex-1 flex flex-col items-center justify-around py-12">
-          <div className="text-center px-6">
-            <p className="arabic-font text-5xl font-bold mb-4 opacity-90" dir="rtl">{arabic}</p>
-            <p className="text-emerald-300 text-[10px] font-black uppercase tracking-widest">{title}</p>
+        <div className="flex-1 flex flex-col items-center justify-around py-12 relative z-10">
+          <div className="text-center px-8 space-y-6">
+            <h1 className="text-2xl font-black tracking-tight mb-2 opacity-60 uppercase tracking-[0.3em] text-sm">{title}</h1>
+            <p className="arabic-font text-6xl font-black mb-6 drop-shadow-2xl leading-relaxed" dir="rtl">{arabic}</p>
           </div>
 
-          <button onClick={increment} className={`w-64 h-64 rounded-full bg-white text-emerald-900 flex flex-col items-center justify-center shadow-[0_0_50px_rgba(255,255,255,0.2)] transition-all duration-100 ${tapAnimation ? 'scale-90' : 'active:scale-95'}`}>
-             <span className="text-8xl font-black tabular-nums tracking-tighter">{current}</span>
-             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-[-5px]">RECITATIONS</span>
+          <button 
+            onClick={increment} 
+            className={`w-72 h-72 rounded-[64px] bg-white text-emerald-950 flex flex-col items-center justify-center shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] transition-all duration-200 ${tapAnimation ? 'scale-[0.88] bg-emerald-50' : 'active:scale-95'}`}
+          >
+             <span className="text-9xl font-black tabular-nums tracking-tighter transition-all">{current}</span>
+             <div className="h-1 w-20 bg-emerald-100 rounded-full mt-2"></div>
           </button>
 
-          <div className="w-full px-8 text-center space-y-4">
+          <div className="w-full px-10 text-center space-y-8">
              {activeChallenge && activeChallenge.current >= activeChallenge.target && (
-               <button onClick={() => archiveChallenge(activeChallenge.id)} className="w-full py-5 bg-emerald-600 rounded-[28px] font-black text-sm uppercase tracking-widest shadow-xl animate-bounce">Complete & Archive</button>
+               <button 
+                 onClick={() => archiveChallenge(activeChallenge.id)} 
+                 className="w-full py-6 bg-gradient-to-r from-emerald-400 to-teal-500 text-white rounded-[32px] font-black text-sm uppercase tracking-[0.3em] shadow-2xl animate-bounce border-b-4 border-emerald-600"
+               >
+                 Mabrook! Archive Task
+               </button>
              )}
-             <p className="text-emerald-300/40 text-[9px] font-black uppercase tracking-widest">Tap the circle to recite</p>
+             <div className="space-y-2">
+               <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-2">
+                 <i className="fas fa-fingerprint text-xs"></i>
+                 TAP TO RECITE
+               </p>
+               {activeChallenge && (
+                 <p className="text-white/20 text-[9px] font-bold uppercase">Target: {activeChallenge.target}</p>
+               )}
+             </div>
           </div>
         </div>
       </div>
     );
   }
 
+  // Selection View
   return (
-    <div className="h-full flex flex-col bg-slate-50 overflow-hidden">
-      <header className="bg-white p-6 pt-12 pb-4 flex justify-between items-center z-10 shrink-0">
+    <div className="h-full flex flex-col bg-[#fdfbf7] dark:bg-slate-900 overflow-hidden">
+      <header className="bg-white dark:bg-slate-900 p-6 pt-12 pb-6 flex justify-between items-center z-10 shadow-sm border-b dark:border-slate-800">
         <div>
-          <h1 className="text-2xl font-black text-emerald-900 mb-1">{t('dhikr')}</h1>
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Spiritual Energy</p>
+          <h1 className="text-3xl font-black text-emerald-950 dark:text-emerald-100 mb-1 tracking-tighter">Tasks</h1>
+          <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Spiritual Momentum</p>
         </div>
-        <div className="flex bg-slate-100 p-1 rounded-xl">
-          <button onClick={() => setActiveTab('challenges')} className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase transition-all ${activeTab === 'challenges' ? 'bg-white text-emerald-900 shadow-sm' : 'text-slate-400'}`}>Tasks</button>
-          <button onClick={() => setActiveTab('personal')} className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase transition-all ${activeTab === 'personal' ? 'bg-white text-emerald-900 shadow-sm' : 'text-slate-400'}`}>Personal</button>
+        <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl">
+          <button onClick={() => setActiveTab('challenges')} className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'challenges' ? 'bg-white dark:bg-slate-700 text-emerald-900 dark:text-emerald-50 shadow-md' : 'text-slate-400'}`}>DAILY</button>
+          <button onClick={() => setActiveTab('personal')} className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'personal' ? 'bg-white dark:bg-slate-700 text-emerald-900 dark:text-emerald-50 shadow-md' : 'text-slate-400'}`}>MY OWN</button>
         </div>
       </header>
 
-      <div className="scroll-container px-6 pt-4 space-y-4">
+      <div className="scroll-container px-6 pt-8 space-y-6">
         {activeTab === 'challenges' ? (
-          state.activeChallenges.map(c => {
+          state.activeChallenges.map((c, idx) => {
             const perc = Math.min(100, (c.current / c.target) * 100);
+            const isDone = perc === 100;
+            // Diverse colorful accents
+            const accentColors = ['emerald', 'amber', 'sky', 'violet', 'rose', 'teal'];
+            const accent = accentColors[idx % accentColors.length];
+            
             return (
-              <div key={c.id} onClick={() => setActiveDhikr(c.id)} className="card-premium btn-ripple cursor-pointer group">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex-1 overflow-hidden">
-                    <h3 className="font-black text-emerald-900 uppercase text-sm mb-1">{t(c.title)}</h3>
-                    <p className="arabic-font text-lg text-emerald-800/40 truncate" dir="rtl">{c.arabic}</p>
+              <div 
+                key={c.id} 
+                onClick={() => setActiveDhikr(c.id)} 
+                className={`card-premium dark:bg-slate-800 group cursor-pointer relative overflow-hidden transition-all hover:translate-y-[-4px] active:scale-[0.98] border-2 ${isDone ? `border-${accent}-500 bg-${accent}-50/10` : 'border-transparent'}`}
+              >
+                <div className="flex justify-between items-start relative z-10">
+                  <div className="flex-1 overflow-hidden space-y-2">
+                    <h3 className="font-black text-emerald-950 dark:text-emerald-50 uppercase text-base tracking-tight">{t(c.title)}</h3>
+                    <p className="arabic-font text-2xl text-emerald-800/60 dark:text-emerald-400/60 truncate" dir="rtl">{c.arabic}</p>
                   </div>
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-inner ${perc === 100 ? 'bg-emerald-600 text-white' : 'bg-slate-50 text-slate-300'}`}>
-                    <i className={`fas ${perc === 100 ? 'fa-check' : 'fa-play'} text-xs`}></i>
+                  <div className={`w-14 h-14 rounded-[22px] flex items-center justify-center shadow-lg transition-all ${isDone ? `bg-gradient-to-br from-${accent}-500 to-${accent}-700 text-white` : 'bg-slate-50 dark:bg-slate-700 text-slate-300'}`}>
+                    <i className={`fas ${isDone ? 'fa-check-double' : 'fa-play'} text-lg`}></i>
                   </div>
                 </div>
-                <div className="w-full bg-slate-100 h-1 rounded-full overflow-hidden">
-                   <div className="bg-emerald-600 h-full rounded-full transition-all" style={{ width: `${perc}%` }}></div>
+                <div className="mt-6 space-y-2">
+                  <div className="flex justify-between items-end">
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{c.current} / {c.target}</span>
+                    <span className={`text-[10px] font-black text-${accent}-600 dark:text-${accent}-400 uppercase tracking-widest`}>{Math.round(perc)}%</span>
+                  </div>
+                  <div className="w-full bg-slate-100 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+                     <div className={`bg-${accent}-500 h-full rounded-full transition-all duration-700 shadow-[0_0_10px_rgba(0,0,0,0.1)]`} style={{ width: `${perc}%` }}></div>
+                  </div>
                 </div>
               </div>
             );
           })
         ) : (
-          <div className="space-y-4">
-            <button onClick={() => setIsAddingDhikr(true)} className="w-full p-8 rounded-[32px] border-4 border-dashed border-emerald-100 text-emerald-700 flex flex-col items-center gap-2 btn-ripple">
-              <i className="fas fa-plus-circle text-2xl"></i>
-              <span className="font-black text-[10px] uppercase tracking-widest">Add New Task</span>
+          <div className="space-y-6">
+            <button onClick={() => setIsAddingDhikr(true)} className="w-full p-10 rounded-[48px] border-4 border-dashed border-emerald-100 dark:border-slate-800 text-emerald-700 dark:text-emerald-500 flex flex-col items-center gap-3 transition-all hover:bg-emerald-50 dark:hover:bg-slate-800/50 active:scale-95 group">
+              <div className="w-16 h-16 bg-emerald-50 dark:bg-slate-700 rounded-3xl flex items-center justify-center transition-transform group-hover:scale-110">
+                <i className="fas fa-plus text-2xl"></i>
+              </div>
+              <span className="font-black text-[12px] uppercase tracking-[0.3em]">Start New Remembrance</span>
             </button>
             {state.personalDhikrs.map(d => (
-              <div key={d.id} onClick={() => setActivePersonalId(d.id)} className="card-premium flex items-center justify-between btn-ripple cursor-pointer">
-                <div>
-                  <h3 className="font-black text-emerald-900 text-sm uppercase">{d.name}</h3>
-                  <p className="text-[9px] font-black text-slate-400 mt-1 uppercase">Daily: {d.dailyCount}</p>
+              <div key={d.id} onClick={() => setActivePersonalId(d.id)} className="card-premium dark:bg-slate-800 flex items-center justify-between group cursor-pointer hover:shadow-2xl transition-all active:scale-[0.98]">
+                <div className="flex items-center gap-5">
+                  <div className="w-14 h-14 bg-gradient-to-br from-sky-400 to-sky-600 text-white rounded-[22px] flex items-center justify-center text-xl shadow-lg shadow-sky-400/20 group-hover:rotate-6 transition-transform">
+                    <i className="fas fa-moon"></i>
+                  </div>
+                  <div>
+                    <h3 className="font-black text-emerald-950 dark:text-emerald-50 text-lg tracking-tight uppercase">{d.name}</h3>
+                    <p className="text-[10px] font-black text-slate-400 mt-1 uppercase tracking-widest">Lifetime: {d.totalCount}</p>
+                  </div>
                 </div>
-                <div className="w-10 h-10 bg-emerald-50 text-emerald-700 rounded-xl flex items-center justify-center"><i className="fas fa-fingerprint"></i></div>
+                <div className="w-10 h-10 bg-slate-50 dark:bg-slate-700 text-slate-300 dark:text-slate-500 rounded-xl flex items-center justify-center group-hover:text-emerald-600 transition-colors"><i className="fas fa-chevron-right text-xs"></i></div>
               </div>
             ))}
           </div>
@@ -130,13 +185,22 @@ const DhikrCounter: React.FC<DhikrCounterProps> = ({
       </div>
 
       {isAddingDhikr && (
-        <div className="absolute inset-0 z-[100] bg-emerald-900/80 backdrop-blur-md flex items-center justify-center p-6">
-          <div className="w-full max-w-sm bg-white rounded-[40px] p-8 shadow-2xl space-y-6">
-            <h2 className="text-2xl font-black text-emerald-900 text-center">New Remembrance</h2>
-            <input type="text" placeholder="e.g. Istighfar" value={newDhikrName} onChange={e => setNewDhikrName(e.target.value)} className="w-full p-5 bg-slate-50 border border-slate-100 rounded-3xl outline-none font-bold text-emerald-900" />
+        <div className="absolute inset-0 z-[100] bg-emerald-950/80 backdrop-blur-xl flex items-center justify-center p-8 animate-fade-in">
+          <div className="w-full max-w-sm bg-white dark:bg-slate-800 rounded-[56px] p-10 shadow-2xl space-y-8 animate-fade-up">
+            <div className="text-center space-y-2">
+              <h2 className="text-3xl font-black text-emerald-950 dark:text-emerald-50 tracking-tighter">Custom Task</h2>
+              <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">What would you like to recite?</p>
+            </div>
+            <input 
+              type="text" 
+              placeholder="e.g. Istighfar" 
+              value={newDhikrName} 
+              onChange={e => setNewDhikrName(e.target.value)} 
+              className="w-full p-6 bg-slate-50 dark:bg-slate-700 border border-slate-100 dark:border-slate-600 rounded-[32px] outline-none font-black text-xl text-emerald-900 dark:text-emerald-50 placeholder:text-slate-300 focus:ring-4 focus:ring-emerald-500/10 transition-all" 
+            />
             <div className="flex gap-4">
-               <button onClick={() => setIsAddingDhikr(false)} className="flex-1 py-4 text-slate-400 font-black uppercase text-[10px]">Cancel</button>
-               <button onClick={() => { addPersonalDhikr(newDhikrName); setIsAddingDhikr(false); setNewDhikrName(''); }} className="flex-1 py-4 bg-emerald-900 text-white rounded-2xl font-black uppercase text-[10px] shadow-lg">Add</button>
+               <button onClick={() => setIsAddingDhikr(false)} className="flex-1 py-5 text-slate-400 dark:text-slate-500 font-black uppercase text-[11px] tracking-widest">Cancel</button>
+               <button onClick={() => { addPersonalDhikr(newDhikrName); setIsAddingDhikr(false); setNewDhikrName(''); }} className="flex-1 py-5 bg-gradient-to-r from-emerald-600 to-emerald-800 text-white rounded-[28px] font-black uppercase text-[11px] tracking-widest shadow-xl shadow-emerald-900/20 active:scale-95 transition-all">Create</button>
             </div>
           </div>
         </div>

@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Language } from '../types';
+import Logo from './Logo';
 
 interface WelcomeProps {
   onEnter: () => void;
@@ -18,76 +19,57 @@ const Welcome: React.FC<WelcomeProps> = ({ onEnter, language, setLanguage, t }) 
   ];
 
   return (
-    <div className="flex flex-col items-center justify-between h-full w-full p-6 text-center bg-[#fdfbf7] relative overflow-hidden">
-      {/* Visual Background Elements */}
-      <div className="absolute top-0 left-0 w-full h-[60vh] bg-gradient-to-b from-[#ecfdf5] to-transparent pointer-events-none"></div>
-      <div className="absolute top-[-10%] right-[-20%] w-[300px] h-[300px] bg-[#c5a059] opacity-[0.05] rounded-full blur-[80px]"></div>
-      <div className="absolute bottom-[-10%] left-[-20%] w-[300px] h-[300px] bg-[#064e3b] opacity-[0.05] rounded-full blur-[80px]"></div>
+    <div className="flex flex-col items-center justify-between h-full w-full p-6 text-center relative overflow-hidden bg-slate-900">
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+        <div className="absolute top-[-10%] right-[-10%] w-[400px] h-[400px] bg-emerald-600/10 rounded-full blur-[100px] animate-pulse"></div>
+        <div className="absolute bottom-[-10%] left-[-10%] w-[300px] h-[300px] bg-sky-600/10 rounded-full blur-[80px] animate-pulse" style={{ animationDelay: '2s' }}></div>
+      </div>
 
-      <div className="flex-1 flex flex-col items-center justify-center space-y-8 z-10 w-full">
-        {/* Logo Section */}
-        <div className="relative animate-fade-up">
-          <div className="w-36 h-36 bg-[#064e3b] rounded-[42px] flex items-center justify-center shadow-[0_25px_50px_-12px_rgba(6,78,59,0.4)] border-[6px] border-white transform transition-transform hover:rotate-2">
-            <i className="fas fa-kaaba text-6xl text-[#ecfdf5] drop-shadow-2xl"></i>
-          </div>
-          <div className="absolute -bottom-3 -right-3 w-14 h-14 bg-white rounded-2xl shadow-xl flex items-center justify-center border border-emerald-50">
-             <i className="fas fa-star-and-crescent text-2xl text-[#c5a059]"></i>
-          </div>
+      <div className="flex-1 flex flex-col items-center justify-center space-y-5 z-10 w-full animate-fade-up">
+        <div className="relative group">
+          <div className="absolute -inset-2 bg-gradient-to-tr from-emerald-500 to-sky-500 rounded-[32px] opacity-20 blur-xl group-hover:opacity-40 transition-opacity"></div>
+          <Logo size="lg" className="rotate-3 transition-transform group-hover:rotate-0" />
         </div>
 
-        <div className="space-y-4 w-full max-w-xs animate-fade-up" style={{ animationDelay: '100ms' }}>
-          <h1 className="text-5xl font-extrabold text-[#064e3b] tracking-tight">Ibadathi</h1>
-          <div className="flex items-center justify-center gap-4">
-            <div className="h-px w-8 bg-[#c5a059]/30"></div>
-            <span className="text-3xl arabic-font text-[#c5a059] font-bold" dir="rtl">عبادتي</span>
-            <div className="h-px w-8 bg-[#c5a059]/30"></div>
+        <div className="space-y-1 w-full max-w-xs">
+          <h1 className="text-4xl font-black text-white tracking-tighter">Ibadathi</h1>
+          <div className="flex items-center justify-center gap-2">
+            <div className="h-px w-6 bg-amber-400/30"></div>
+            <span className="text-lg arabic-font text-amber-400 font-black" dir="rtl">عبادتي</span>
+            <div className="h-px w-6 bg-amber-400/30"></div>
           </div>
-          <p className="text-slate-500 text-xs font-medium leading-relaxed px-2">
+          <p className="text-slate-400 text-[10px] font-black leading-tight px-6 opacity-70">
             {t('welcomeSub')}
           </p>
         </div>
 
-        {/* Language Selection Grid */}
-        <div className="w-full max-w-[320px] space-y-4 animate-fade-up" style={{ animationDelay: '200ms' }}>
-          <p className="text-[10px] font-black text-[#064e3b]/40 uppercase tracking-[0.2em]">{t('selectLanguage')}</p>
-          
-          <div className="grid grid-cols-2 gap-3">
+        <div className="w-full max-w-[280px] space-y-3">
+          <p className="text-[8px] font-black text-white/30 uppercase tracking-[0.2em]">{t('selectLanguage')}</p>
+          <div className="grid grid-cols-2 gap-2">
             {languages.map((lang) => (
               <button
                 key={lang.code}
                 onClick={() => setLanguage(lang.code)}
-                className={`flex flex-col items-center justify-center p-4 rounded-[28px] border-2 transition-all duration-300 active:scale-95 ${
-                  language === lang.code
-                    ? 'bg-white border-[#064e3b] shadow-xl shadow-emerald-900/5'
-                    : 'bg-white/40 border-slate-100 hover:border-emerald-100 shadow-sm'
+                className={`flex flex-col items-center justify-center p-2.5 rounded-xl border transition-all duration-300 active:scale-95 ${
+                  language === lang.code ? 'bg-white border-white' : 'bg-white/5 border-white/5 hover:border-white/10'
                 }`}
               >
-                <span className={`text-[8px] uppercase font-black tracking-widest mb-1 ${
-                  language === lang.code ? 'text-[#064e3b]' : 'text-slate-400'
-                }`}>{lang.label}</span>
-                <span className={`text-base font-bold ${
-                  language === lang.code ? 'text-[#064e3b]' : 'text-slate-700'
-                } ${lang.code === 'ar' ? 'arabic-ui' : ''}`}>
+                <span className={`text-[7px] uppercase font-black tracking-widest mb-0.5 ${language === lang.code ? 'text-emerald-900' : 'text-slate-500'}`}>{lang.label}</span>
+                <span className={`text-xs font-black ${language === lang.code ? 'text-emerald-900' : 'text-slate-200'} ${lang.code === 'ar' ? 'arabic-font text-base' : ''}`}>
                   {lang.native}
                 </span>
-                {language === lang.code && (
-                  <div className="mt-1.5 w-1 h-1 bg-[#c5a059] rounded-full"></div>
-                )}
               </button>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Primary Action */}
-      <div className="w-full max-w-xs pb-10 z-10 animate-fade-up" style={{ animationDelay: '300ms' }}>
-        <button 
-          onClick={onEnter}
-          className="w-full bg-[#064e3b] hover:bg-[#053d2e] text-white font-black py-4.5 rounded-[32px] shadow-[0_20px_40px_-10px_rgba(6,78,59,0.3)] flex items-center justify-center gap-4 group transition-all active:scale-[0.98]"
-        >
-          <span className="tracking-widest uppercase text-sm font-bold">{t('getStarted')}</span>
-          <i className="fas fa-arrow-right text-xs opacity-60 group-hover:translate-x-1 transition-transform rtl:rotate-180"></i>
+      <div className="w-full max-w-[280px] pb-10 z-10 space-y-2 animate-fade-up">
+        <button onClick={onEnter} className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black py-4 rounded-2xl shadow-lg flex items-center justify-center gap-3 active:scale-[0.98] transition-all">
+          <span className="tracking-widest uppercase text-[11px] font-black">{t('getStarted')}</span>
+          <i className="fas fa-arrow-right text-[8px] opacity-40"></i>
         </button>
+        <p className="pt-4 text-slate-600 text-[7px] font-black uppercase tracking-[0.4em] opacity-40">DIGITAL WORSHIP • 1446 AH</p>
       </div>
     </div>
   );

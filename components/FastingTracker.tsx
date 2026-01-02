@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { UserData, FastingLog, PrayerTimings, HealthPeriod } from '../types';
 
@@ -47,7 +46,7 @@ const FastingTracker: React.FC<FastingTrackerProps> = ({ state, updateFasting, s
       <div className="p-4 pt-10 pb-4 bg-emerald-900 text-white shrink-0 shadow-lg rounded-b-[32px]">
         <div className="flex items-center gap-3 mb-4">
           <button onClick={() => setCurrentView('dashboard')} className="w-8 h-8 flex items-center justify-center bg-white/10 rounded-lg"><i className="fas fa-chevron-left text-xs"></i></button>
-          <h1 className="text-lg font-bold tracking-tight">{t('fasting')}</h1>
+          <h1 className="text-lg font-black tracking-tight">{t('fasting')}</h1>
         </div>
         <div className="flex bg-white/5 p-1 rounded-xl">
           <button onClick={() => setSubView('stats')} className={`flex-1 py-1.5 rounded-lg text-[8px] font-black uppercase ${subView === 'stats' ? 'bg-white text-emerald-900' : 'text-white/60'}`}>Stats</button>
@@ -62,14 +61,14 @@ const FastingTracker: React.FC<FastingTrackerProps> = ({ state, updateFasting, s
             <div className="bg-white p-5 rounded-2xl border border-emerald-50 text-center shadow-sm">
                <span className="text-[9px] font-black text-slate-400 uppercase">Fasting Progress</span>
                <div className="flex justify-around items-center mt-3">
-                 <div><p className="text-2xl font-black text-emerald-600">{stats.completed}</p><p className="text-[7px] uppercase">Done</p></div>
+                 <div><p className="text-2xl font-black text-emerald-600">{stats.completed}</p><p className="text-[7px] uppercase font-black">Done</p></div>
                  <div className="h-8 w-px bg-slate-100"></div>
-                 <div><p className="text-2xl font-black text-rose-600">{stats.pendingQada}</p><p className="text-[7px] uppercase">Qada Due</p></div>
+                 <div><p className="text-2xl font-black text-rose-600">{stats.pendingQada}</p><p className="text-[7px] uppercase font-black">Qada Due</p></div>
                </div>
             </div>
             <div className="bg-amber-50 p-4 rounded-2xl border border-amber-100">
-               <h4 className="text-amber-900 font-bold text-[8px] uppercase mb-1">Rulings</h4>
-               <p className="text-amber-800/70 text-[9px] leading-tight font-semibold italic">Ramadan fasts missed due to illness or health periods must be recorded and made up (Qada) before the next Ramadan.</p>
+               <h4 className="text-amber-900 font-black text-[8px] uppercase mb-1">Rulings</h4>
+               <p className="text-amber-800/70 text-[9px] leading-tight font-black italic">Ramadan fasts missed due to illness or health periods must be recorded and made up (Qada) before the next Ramadan.</p>
             </div>
           </div>
         )}
@@ -94,8 +93,8 @@ const FastingTracker: React.FC<FastingTrackerProps> = ({ state, updateFasting, s
           <div className="h-full flex items-center justify-center animate-fade-up text-center px-6">
             <div>
               <i className="fas fa-sun text-4xl text-amber-100 mb-3"></i>
-              <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Sunnah Tracking Coming Soon</p>
-              <p className="text-slate-300 text-[8px] mt-1">Mondays, Thursdays, and Ayyam al-Bidh</p>
+              <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Sunnah Tracking Coming Soon</p>
+              <p className="text-slate-300 text-[8px] mt-1 font-black">Mondays, Thursdays, and Ayyam al-Bidh</p>
             </div>
           </div>
         )}

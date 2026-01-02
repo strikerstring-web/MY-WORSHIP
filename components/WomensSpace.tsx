@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { UserData, PrayerTimings, HealthPeriod } from '../types';
 
@@ -30,7 +29,7 @@ const WomensSpace: React.FC<WomensSpaceProps> = ({ state, toggleHayd, addHealthP
       <div className="p-4 pt-10 pb-4 bg-emerald-900 text-white shrink-0 shadow-lg rounded-b-[32px]">
         <div className="flex items-center gap-3">
           <button onClick={() => setCurrentView('dashboard')} className="w-8 h-8 flex items-center justify-center bg-white/10 rounded-lg"><i className="fas fa-chevron-left text-xs"></i></button>
-          <h1 className="text-lg font-bold tracking-tight">{t('womensSpace')}</h1>
+          <h1 className="text-lg font-black tracking-tight">{t('womensSpace')}</h1>
         </div>
       </div>
 
@@ -51,26 +50,26 @@ const WomensSpace: React.FC<WomensSpaceProps> = ({ state, toggleHayd, addHealthP
             {showAdd ? (
               <div className="bg-white p-3 rounded-2xl border border-emerald-50 shadow-lg animate-fade-up space-y-2 shrink-0">
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-0.5"><label className="text-[6px] font-black text-slate-400 uppercase tracking-widest ml-1">Start</label><input type="date" value={newStart} onChange={e => setNewStart(e.target.value)} className="w-full p-2 bg-slate-50 border border-slate-100 rounded-lg text-[9px] outline-none" /></div>
-                  <div className="space-y-0.5"><label className="text-[6px] font-black text-slate-400 uppercase tracking-widest ml-1">End</label><input type="date" value={newEnd} onChange={e => setNewEnd(e.target.value)} className="w-full p-2 bg-slate-50 border border-slate-100 rounded-lg text-[9px] outline-none" /></div>
+                  <div className="space-y-0.5"><label className="text-[6px] font-black text-slate-400 uppercase tracking-widest ml-1">Start</label><input type="date" value={newStart} onChange={e => setNewStart(e.target.value)} className="w-full p-2 bg-slate-50 border border-slate-100 rounded-lg text-[9px] outline-none font-black" /></div>
+                  <div className="space-y-0.5"><label className="text-[6px] font-black text-slate-400 uppercase tracking-widest ml-1">End</label><input type="date" value={newEnd} onChange={e => setNewEnd(e.target.value)} className="w-full p-2 bg-slate-50 border border-slate-100 rounded-lg text-[9px] outline-none font-black" /></div>
                 </div>
                 <button onClick={handleAdd} className="w-full py-2 bg-[#064e3b] text-white rounded-lg font-black text-[8px] uppercase tracking-widest shadow-md">Save</button>
               </div>
             ) : (
               recentPeriods.map(p => (
                 <div key={p.id} className="bg-white p-2.5 rounded-xl border border-emerald-50 shadow-sm flex items-center justify-between shrink-0">
-                  <div className="flex items-center gap-2"><div className="w-7 h-7 bg-rose-50 text-rose-500 rounded-lg flex items-center justify-center text-[9px]"><i className="fas fa-tint"></i></div><div><p className="text-[9px] font-black text-emerald-900 leading-none mb-0.5">{p.start.split('T')[0]}</p><p className="text-[7px] text-slate-400 uppercase font-bold">Excused</p></div></div>
+                  <div className="flex items-center gap-2"><div className="w-7 h-7 bg-rose-50 text-rose-500 rounded-lg flex items-center justify-center text-[9px]"><i className="fas fa-tint"></i></div><div><p className="text-[9px] font-black text-emerald-900 leading-none mb-0.5">{p.start.split('T')[0]}</p><p className="text-[7px] text-slate-400 uppercase font-black">Excused</p></div></div>
                   <button onClick={() => removeHealthPeriod(p.id)} className="w-6 h-6 text-rose-200"><i className="fas fa-trash text-[8px]"></i></button>
                 </div>
               ))
             )}
-            {!showAdd && recentPeriods.length === 0 && <div className="flex-1 border-2 border-dashed border-emerald-50 rounded-2xl flex items-center justify-center text-[8px] text-slate-300 font-bold uppercase">No records</div>}
+            {!showAdd && recentPeriods.length === 0 && <div className="flex-1 border-2 border-dashed border-emerald-50 rounded-2xl flex items-center justify-center text-[8px] text-slate-300 font-black uppercase">No records</div>}
           </div>
         </div>
 
         <div className="bg-amber-50 p-3 rounded-2xl border border-amber-100 shrink-0 mt-2">
           <h3 className="font-black text-amber-800 text-[8px] mb-1 flex items-center gap-1"><i className="fas fa-circle-info text-[9px]"></i> Rules</h3>
-          <ul className="space-y-1 text-[7px] text-amber-900/80 font-medium">
+          <ul className="space-y-1 text-[7px] text-amber-900/80 font-black">
             <li className="flex gap-1"><i className="fas fa-check-circle text-amber-500 mt-0.5"></i> <span>Prayer during periods are <b>exempted</b> and not made up.</span></li>
             <li className="flex gap-1"><i className="fas fa-exclamation-circle text-amber-500 mt-0.5"></i> <span>Ramadan fasts <b>must</b> be made up later (Qada).</span></li>
           </ul>
