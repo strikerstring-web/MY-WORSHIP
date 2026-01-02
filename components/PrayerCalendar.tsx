@@ -100,7 +100,7 @@ const PrayerCalendar: React.FC<PrayerCalendarProps> = ({ state, updatePrayerStat
         <div className="content-limit w-full">
           
           {/* Monthly Grid */}
-          <div className="grid grid-cols-7 gap-3 mb-6 animate-fade-up">
+          <div className="grid grid-cols-7 gap-3 mb-8 animate-fade-up">
             {Array(firstDay).fill(null).map((_, i) => <div key={`empty-${i}`} className="aspect-square" />)}
             {days.map(d => {
               const { fardCount, missedCount, isFasting, dhikrDone, quranDone, excused } = getDayWorshipData(d);
@@ -146,36 +146,8 @@ const PrayerCalendar: React.FC<PrayerCalendarProps> = ({ state, updatePrayerStat
             })}
           </div>
 
-          {/* Calendar Legend */}
-          <div className="flex flex-wrap justify-center gap-x-5 gap-y-3 mb-8 px-4 py-4 bg-white/40 dark:bg-slate-900/40 rounded-3xl border border-slate-100 dark:border-slate-800 animate-fade-up stagger-1" aria-label="Calendar Legend">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/20"></div>
-              <span className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">{t('completed')}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-rose-500 shadow-sm shadow-rose-500/20"></div>
-              <span className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">{t('missed')}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-blue-500 shadow-sm shadow-blue-500/20"></div>
-              <span className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">{t('dhikr')}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-purple-500 shadow-sm shadow-purple-500/20"></div>
-              <span className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">{t('quran')}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-amber-500 shadow-sm shadow-amber-500/20"></div>
-              <span className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">{t('fasting')}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <i className="fas fa-leaf text-[9px] text-rose-400"></i>
-              <span className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">{t('excused')}</span>
-            </div>
-          </div>
-
           {/* Selected Day Details Card */}
-          <div className="animate-fade-up stagger-2">
+          <div className="animate-fade-up stagger-1">
             <div className="card-premium !p-6 bg-white dark:bg-slate-900/50 border-emerald-50 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none">
               <div className="flex items-center justify-between mb-8">
                 <div>
@@ -231,6 +203,26 @@ const PrayerCalendar: React.FC<PrayerCalendarProps> = ({ state, updatePrayerStat
                     <p className="text-sm font-black text-emerald-950 dark:text-white">{selectedData.isFasting ? 'Fasting' : 'None'}</p>
                   </div>
                 </div>
+              </div>
+
+              {/* Legend Summary */}
+              <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-wrap justify-center gap-4">
+                 <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                    <span className="text-[7px] font-black text-slate-400 uppercase tracking-widest">Prayers</span>
+                 </div>
+                 <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                    <span className="text-[7px] font-black text-slate-400 uppercase tracking-widest">Dhikr</span>
+                 </div>
+                 <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
+                    <span className="text-[7px] font-black text-slate-400 uppercase tracking-widest">Quran</span>
+                 </div>
+                 <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
+                    <span className="text-[7px] font-black text-slate-400 uppercase tracking-widest">Fast</span>
+                 </div>
               </div>
             </div>
           </div>

@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { UserData, PrayerStatus } from '../types';
+import { UserData, PrayerStatus, PrayerReminder } from '../types';
+import { PRAYERS } from '../constants';
 
 interface MyAccountProps {
   state: UserData;
@@ -8,10 +9,10 @@ interface MyAccountProps {
   onLogout: () => void;
   toggleTheme: () => void;
   toggleEcoMode: () => void;
-  toggleNotifications: () => void;
+  updatePrayerReminder: (prayer: string, time: string, enabled: boolean) => void;
 }
 
-const MyAccount: React.FC<MyAccountProps> = ({ state, setCurrentView, t, onLogout, toggleTheme, toggleEcoMode, toggleNotifications }) => {
+const MyAccount: React.FC<MyAccountProps> = ({ state, setCurrentView, t, onLogout, toggleTheme, toggleEcoMode, updatePrayerReminder }) => {
   const stats = useMemo(() => {
     let totalFard = 0, completedFard = 0, missedFard = 0;
     Object.values(state.prayerLogs).forEach(log => {
@@ -31,6 +32,7 @@ const MyAccount: React.FC<MyAccountProps> = ({ state, setCurrentView, t, onLogou
     return { totalFard, completedFard, missedFard, ratio, level, color, icon };
   }, [state]);
 
+  const prayerReminders = state.settings.prayerReminders || [];
   const isDark = state.settings.theme === 'dark';
 
   return (
@@ -72,33 +74,53 @@ const MyAccount: React.FC<MyAccountProps> = ({ state, setCurrentView, t, onLogou
          </div>
       </div>
 
-      {/* System Settings */}
-      <div className="space-y-6 animate-fade-up stagger-3 pb-20">
+      {/* Reminders Section */}
+      <div className="space-y-6 mb-12 animate-fade-up stagger-3">
          <div className="flex items-center gap-4 px-1">
-            <h4 className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Worship Automation</h4>
+            <h4 className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Prayer Alerts</h4>
             <span className="h-px flex-1 bg-black/5 dark:bg-white/5"></span>
          </div>
-         
-         <button onClick={toggleNotifications} className="card-premium w-full flex items-center justify-between !p-6 mb-3">
-            <div className="flex items-center gap-5">
-               <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl transition-all ${state.settings.notificationsEnabled ? 'bg-emerald-500/10 text-emerald-500' : 'bg-slate-100 dark:bg-white/5 text-slate-400'}`}>
-                 <i className={`fas ${state.settings.notificationsEnabled ? 'fa-bell' : 'fa-bell-slash'}`}></i>
+         <div className="space-y-3">
+           {PRAYERS.map(p => {
+             const reminder = prayerReminders.find(r => r.prayer === p) || { prayer: p, time: '12:00', enabled: false };
+             return (
+               <div key={p} className="card-premium flex items-center justify-between !p-5 group">
+                 <div className="flex items-center gap-5">
+                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-lg ${reminder.enabled ? 'bg-emerald-600 text-white' : 'bg-slate-50 dark:bg-white/5 text-slate-400 dark:text-slate-600'}`}>
+                     <i className="fas fa-bell"></i>
+                   </div>
+                   <div>
+                     <span className="font-black text-sm text-emerald-950 dark:text-white capitalize">{t(p)}</span>
+                     <p className="text-[9px] font-bold text-slate-400 dark:text-slate-600 uppercase tracking-widest mt-0.5">Custom Reminder</p>
+                   </div>
+                 </div>
+                 <div className="flex items-center gap-4">
+                   <input 
+                     type="time" 
+                     className="bg-transparent border-none text-xs font-black text-emerald-600 focus:ring-0 cursor-pointer" 
+                     value={reminder.time} 
+                     onChange={(e) => updatePrayerReminder(p, e.target.value, reminder.enabled)}
+                   />
+                   <button 
+                     onClick={() => updatePrayerReminder(p, reminder.time, !reminder.enabled)}
+                     className={`w-12 h-6 rounded-full p-1 transition-all ${reminder.enabled ? 'bg-emerald-600' : 'bg-slate-200 dark:bg-white/10'}`}
+                   >
+                     <div className={`w-4 h-4 bg-white rounded-full transition-transform ${reminder.enabled ? 'translate-x-6' : 'translate-x-0'}`}></div>
+                   </button>
+                 </div>
                </div>
-               <div className="text-left">
-                 <span className="font-black text-sm text-emerald-950 dark:text-white">Automatic Alarms</span>
-                 <p className="text-[9px] font-bold text-slate-400 dark:text-slate-600 uppercase tracking-widest mt-0.5">Location-Based Adhan</p>
-               </div>
-            </div>
-            <div className={`w-12 h-6 rounded-full p-1 transition-colors ${state.settings.notificationsEnabled ? 'bg-emerald-600' : 'bg-slate-200 dark:bg-white/10'}`}>
-               <div className={`w-4 h-4 bg-white rounded-full transition-transform ${state.settings.notificationsEnabled ? 'translate-x-6' : 'translate-x-0'}`}></div>
-            </div>
-         </button>
+             );
+           })}
+         </div>
+      </div>
 
-         <div className="flex items-center gap-4 px-1 mt-8">
+      {/* System Settings */}
+      <div className="space-y-6 animate-fade-up stagger-4 pb-20">
+         <div className="flex items-center gap-4 px-1">
             <h4 className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Preferences</h4>
             <span className="h-px flex-1 bg-black/5 dark:bg-white/5"></span>
          </div>
-
+         
          <button onClick={toggleTheme} className="card-premium w-full flex items-center justify-between !p-6 mb-3">
             <div className="flex items-center gap-5">
                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl transition-all ${isDark ? 'bg-indigo-500/10 text-indigo-400' : 'bg-amber-500/10 text-amber-500'}`}>
@@ -109,7 +131,7 @@ const MyAccount: React.FC<MyAccountProps> = ({ state, setCurrentView, t, onLogou
                  <p className="text-[9px] font-bold text-slate-400 dark:text-slate-600 uppercase tracking-widest mt-0.5">Visual Appearance</p>
                </div>
             </div>
-            <div className={`w-12 h-6 rounded-full p-1 transition-colors ${isDark ? 'bg-indigo-600' : 'bg-amber-50'}`}>
+            <div className={`w-12 h-6 rounded-full p-1 transition-colors ${isDark ? 'bg-indigo-600' : 'bg-amber-500'}`}>
                <div className={`w-4 h-4 bg-white rounded-full transition-transform ${isDark ? 'translate-x-6' : 'translate-x-0'}`}></div>
             </div>
          </button>
