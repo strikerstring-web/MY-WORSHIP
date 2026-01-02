@@ -1,5 +1,5 @@
 {
-  "name": "Ibadathi - My Worship",
+  "name": "Ibadathi (عبادتي)",
   "description": "A comprehensive Islamic worship companion for tracking prayers, fasting, Quran progress, and more.",
   "requestFramePermissions": [
     "geolocation"

@@ -46,6 +46,15 @@ export interface DhikrChallenge {
   lastReset?: string;
 }
 
+export interface PersonalDhikr {
+  id: string;
+  name: string;
+  totalCount: number;
+  dailyCount: number;
+  sessionCount: number;
+  lastUpdated: string;
+}
+
 export interface DhikrHistoryEntry {
   id: string;
   title: string;
@@ -84,10 +93,12 @@ export interface UserData {
   quranProgress: QuranProgress;
   dhikrCount: number;
   activeChallenges: DhikrChallenge[];
+  personalDhikrs: PersonalDhikr[];
+  activeDhikrId: string | null; // Tracked active challenge for the counter
   dhikrHistory: DhikrHistoryEntry[];
-  isHaydNifas: boolean; // Kept for quick toggle, but periods are primary
+  isHaydNifas: boolean;
   haydStartDate: string | null;
-  healthPeriods: HealthPeriod[]; // New range-based storage
+  healthPeriods: HealthPeriod[];
   settings: {
     notificationsEnabled: boolean;
     locationEnabled: boolean;
