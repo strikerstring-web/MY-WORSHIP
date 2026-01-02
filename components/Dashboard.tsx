@@ -53,11 +53,8 @@ const Dashboard: React.FC<DashboardProps> = ({ state, setCurrentView, t, onLogou
     { id: 'fasting', label: t('fasting'), icon: 'fa-moon', color: 'from-indigo-50 to-indigo-100 text-indigo-900', iconColor: 'text-indigo-700' },
     { id: 'dhikr', label: t('dhikr'), icon: 'fa-seedling', color: 'from-green-50 to-green-100 text-green-900', iconColor: 'text-green-700' },
     { id: 'zakat', label: t('zakat'), icon: 'fa-coins', color: 'from-rose-50 to-rose-100 text-rose-900', iconColor: 'text-rose-700' },
+    ...(state.profile?.sex === 'female' ? [{ id: 'women', label: t('womensSpace'), icon: 'fa-leaf', color: 'from-rose-50 to-rose-100 text-rose-900', iconColor: 'text-rose-600' }] : [])
   ];
-
-  if (state.profile?.sex === 'female') {
-    menuItems.push({ id: 'women', label: t('womensSpace'), icon: 'fa-leaf', color: 'from-rose-50 to-rose-100 text-rose-900', iconColor: 'text-rose-600' });
-  }
 
   const dailyHadith = useMemo(() => {
     const now = new Date();
@@ -84,152 +81,97 @@ const Dashboard: React.FC<DashboardProps> = ({ state, setCurrentView, t, onLogou
     return { next, timeLeft: `${Math.floor(diff / 60)}h ${diff % 60}m`, progress, activeName: prev.name, timingsMinutes };
   }, [state.todayTimings, currentTimeMinutes]);
 
-  const featuredChallenge = state.activeChallenges[0];
-
   return (
     <div className="h-full w-full flex flex-col bg-slate-50/30 overflow-hidden view-transition pt-8">
-      
-      {/* Fixed Sticky Header Section */}
-      <header className="relative w-full bg-[#064e3b] text-white pt-8 pb-12 px-4 rounded-b-[40px] shadow-2xl overflow-hidden shrink-0">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-[80px] -mr-32 -mt-32"></div>
-        <div className="relative z-10 w-full flex flex-col items-center">
-          <div className="flex justify-between items-center w-full mb-4">
+      {/* Header Profile Section - Compact */}
+      <header className="relative w-full bg-[#064e3b] text-white pt-6 pb-8 px-4 rounded-b-[32px] shadow-lg shrink-0">
+        <div className="relative z-10 w-full flex flex-col gap-3">
+          <div className="flex justify-between items-center w-full">
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center border border-white/20 backdrop-blur-lg">
-                <i className="fas fa-user text-emerald-200 text-sm"></i>
+              <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center border border-white/20">
+                <i className="fas fa-user text-emerald-200 text-xs"></i>
               </div>
-              <div className="ltr:text-left rtl:text-right">
-                <h2 className="text-[8px] text-emerald-300 uppercase tracking-widest font-bold">{t('welcome')}</h2>
-                <h1 className="text-base font-bold tracking-tight">{state.profile?.name}</h1>
-              </div>
+              <h1 className="text-sm font-bold truncate max-w-[120px]">{state.profile?.name}</h1>
             </div>
-            <div className="flex gap-1.5">
-              <button onClick={() => setCurrentView('about')} className="w-8 h-8 rounded-full flex items-center justify-center transition-all border border-white/10 bg-white/10"><i className="fas fa-info text-[10px]"></i></button>
-              <button onClick={toggleNotifications} className={`w-8 h-8 rounded-full flex items-center justify-center transition-all border border-white/10 ${state.settings.notificationsEnabled ? 'bg-gold-classic' : 'bg-white/10'}`}><i className={`fas ${state.settings.notificationsEnabled ? 'fa-bell' : 'fa-bell-slash'} text-[10px]`}></i></button>
-              <button onClick={onLogout} className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center border border-white/10"><i className="fas fa-power-off text-[10px] text-rose-300"></i></button>
+            <div className="flex gap-1">
+              <button onClick={() => setCurrentView('about')} className="w-7 h-7 rounded-full flex items-center justify-center bg-white/10"><i className="fas fa-info text-[9px]"></i></button>
+              <button onClick={toggleNotifications} className={`w-7 h-7 rounded-full flex items-center justify-center ${state.settings.notificationsEnabled ? 'bg-gold-classic' : 'bg-white/10'}`}><i className={`fas ${state.settings.notificationsEnabled ? 'fa-bell' : 'fa-bell-slash'} text-[9px]`}></i></button>
+              <button onClick={onLogout} className="w-7 h-7 bg-white/10 rounded-full flex items-center justify-center"><i className="fas fa-power-off text-[9px] text-rose-300"></i></button>
             </div>
           </div>
           
-          <div className="flex gap-2 w-full">
-            <div className="flex-1 glass-card bg-white/5 p-3 rounded-2xl ltr:text-left rtl:text-right border border-white/10">
-              <span className="text-[8px] text-emerald-300/60 uppercase font-black tracking-widest block">{t('dhikr')}</span>
-              <span className="text-lg font-black tabular-nums">{state.dhikrCount.toLocaleString()}</span>
+          <div className="flex gap-1.5">
+            <div className="flex-1 bg-white/5 p-2 rounded-xl border border-white/10">
+              <span className="text-[7px] text-emerald-300/60 uppercase font-black block">{t('dhikr')}</span>
+              <span className="text-sm font-black tabular-nums">{state.dhikrCount.toLocaleString()}</span>
             </div>
-            <div className="flex-1 glass-card bg-white/5 p-3 rounded-2xl ltr:text-left rtl:text-right border border-white/10">
-              <span className="text-[8px] text-emerald-300/60 uppercase font-black tracking-widest block">{t('lastRead')}</span>
-              <span className="text-xs font-bold truncate block mt-0.5">{state.quranProgress.surah || '---'}</span>
+            <div className="flex-1 bg-white/5 p-2 rounded-xl border border-white/10">
+              <span className="text-[7px] text-emerald-300/60 uppercase font-black block">{t('lastRead')}</span>
+              <span className="text-[10px] font-bold truncate block">{state.quranProgress.surah || '---'}</span>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Main Content Area - No Scroll here, designed to fit */}
-      <div className="w-full flex flex-col items-center flex-1 px-4 py-2 overflow-hidden">
-        
-        {/* Daily Hadith Banner - AT THE TOP OF CONTENT */}
-        <div className="w-full mb-3">
-          <div className="bg-white p-4 rounded-[28px] border border-emerald-50 shadow-sm relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-2 opacity-[0.03] rotate-12"><i className="fas fa-quote-right text-4xl"></i></div>
-            <div className="relative z-10">
-              <div className="flex items-center gap-1.5 mb-2">
-                <span className="bg-emerald-600/10 text-emerald-800 text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest">
-                  {t('hadithTitle')}
-                </span>
+      {/* Scroll-free content area */}
+      <div className="flex-1 px-3 flex flex-col justify-around py-2 overflow-hidden">
+        {/* Next Prayer - Tighter */}
+        <div className="bg-white p-3 rounded-2xl shadow-sm border border-emerald-50 relative overflow-hidden">
+          <div className="flex items-center justify-between gap-2">
+            <div className="ltr:text-left">
+              <span className="text-[7px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">{t('nextPrayer')}</span>
+              <div className="flex items-center gap-1">
+                <h2 className="text-lg font-black text-emerald-900 capitalize">{prayerTimingData ? t(prayerTimingData.next.name) : '--'}</h2>
+                <span className="text-[7px] font-bold text-emerald-700 bg-emerald-50 px-1 rounded">{prayerTimingData?.next.time}</span>
               </div>
-              <p className="text-emerald-900 arabic-font text-sm leading-relaxed text-right font-medium" dir="rtl">
-                {dailyHadith.arabic}
-              </p>
-              {userLang !== 'ar' && (
-                <p className="text-slate-600 font-medium leading-relaxed italic text-[9px] mt-2 border-l border-gold-classic/40 pl-2">
-                  "{dailyHadith[userLang]}"
-                </p>
-              )}
             </div>
+            <div className="ltr:text-right">
+              <span className="text-lg font-black text-gold-classic tabular-nums">{prayerTimingData?.timeLeft || '--:--'}</span>
+              <span className="text-[7px] font-bold text-slate-400 block uppercase">Left</span>
+            </div>
+          </div>
+          <div className="w-full bg-slate-100 h-1 rounded-full overflow-hidden mt-2">
+            <div className="bg-emerald-600 h-full rounded-full transition-all duration-1000" style={{ width: `${prayerTimingData?.progress || 0}%` }}></div>
           </div>
         </div>
 
-        {/* Next Prayer Floating Card */}
-        <div className="mb-3 w-full">
-          <div className="bg-white p-4 rounded-[32px] shadow-xl shadow-emerald-900/5 border border-emerald-50 relative overflow-hidden">
-            <div className="flex items-center justify-between gap-3 mb-3">
-              <div className="ltr:text-left">
-                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">{t('nextPrayer')}</span>
-                <div className="flex items-center gap-1.5">
-                  <h2 className="text-xl font-black text-emerald-900 capitalize tracking-tight">{prayerTimingData ? t(prayerTimingData.next.name) : '--'}</h2>
-                  <div className="px-1.5 py-0.5 bg-emerald-50 rounded-full border border-emerald-100">
-                    <span className="text-[8px] font-bold text-emerald-700 tabular-nums">{prayerTimingData?.next.time}</span>
+        {/* Hadith - Ultra compact */}
+        <div className="bg-white p-3 rounded-2xl border border-emerald-50 shadow-sm overflow-hidden">
+          <span className="bg-emerald-600/10 text-emerald-800 text-[6px] font-black px-1.5 py-0.5 rounded-full uppercase mb-1 inline-block">HADITH</span>
+          <p className="text-emerald-900 arabic-font text-[11px] leading-tight text-right mb-1" dir="rtl">{dailyHadith.arabic}</p>
+          <p className="text-slate-500 italic text-[8px] leading-tight line-clamp-2">"{dailyHadith[userLang]}"</p>
+        </div>
+
+        {/* Prayer Grid Summary - Tighter */}
+        <div className="bg-white p-3 rounded-2xl shadow-sm border border-emerald-50">
+          <div className="flex justify-between items-center mb-2">
+             <h3 className="text-[8px] font-black text-emerald-900 uppercase">{t('todayPrayers')}</h3>
+             {state.isHaydNifas && <span className="text-[6px] px-1 bg-rose-50 text-rose-600 rounded-full">{t('excused')}</span>}
+          </div>
+          <div className="grid grid-cols-5 gap-1">
+            {PRAYERS.map((p) => {
+              const status = todayLogs[p];
+              return (
+                <button key={p} disabled={state.isHaydNifas} onClick={() => handlePrayerToggle(p)} className={`flex flex-col items-center p-1.5 rounded-xl border ${status === PrayerStatus.COMPLETED ? 'bg-emerald-50 border-emerald-100 text-emerald-800' : 'bg-slate-50 border-transparent text-slate-400'} ${state.isHaydNifas ? 'opacity-40' : ''}`}>
+                  <span className="text-[6px] font-black uppercase mb-1">{t(p).substring(0,3)}</span>
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center ${status === PrayerStatus.COMPLETED ? 'bg-emerald-600 text-white' : 'bg-white border border-slate-100'}`}>
+                    <i className={`fas ${status === PrayerStatus.COMPLETED ? 'fa-check' : 'fa-circle'} text-[6px]`}></i>
                   </div>
-                </div>
-              </div>
-              <div className="ltr:text-right">
-                <span className="text-xl font-black text-gold-classic tabular-nums">{prayerTimingData?.timeLeft || '--:--'}</span>
-                <span className="text-[7px] font-bold text-slate-400 block uppercase tracking-tighter">Remaining</span>
-              </div>
-            </div>
-            <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden p-0.5">
-              <div className="bg-emerald-600 h-full rounded-full transition-all duration-1000" style={{ width: `${prayerTimingData?.progress || 0}%` }}></div>
-            </div>
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Today's Prayers Summary */}
-        <div className="w-full mb-3">
-          <div className="bg-white p-4 rounded-[30px] shadow-sm border border-emerald-50">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-[9px] font-black text-emerald-900 uppercase tracking-widest">{t('todayPrayers')}</h3>
-              {state.isHaydNifas && <span className="text-[7px] font-black px-1.5 py-0.5 bg-rose-50 text-rose-600 rounded-full border border-rose-100 uppercase">{t('excused')}</span>}
-            </div>
-            <div className="grid grid-cols-5 gap-1.5">
-              {PRAYERS.map((p) => {
-                const status = todayLogs[p], isAnimating = animatingPrayer === p;
-                let isMissed = false;
-                if (status === PrayerStatus.PENDING && prayerTimingData?.timingsMinutes) {
-                  const tmg = prayerTimingData.timingsMinutes.find(tm => tm.name === p);
-                  if (tmg && tmg.total < currentTimeMinutes) isMissed = true;
-                }
-                return (
-                  <button key={p} disabled={state.isHaydNifas} onClick={() => handlePrayerToggle(p)} className={`flex flex-col items-center p-2 rounded-2xl border active-scale ${status === PrayerStatus.COMPLETED ? 'bg-emerald-50 border-emerald-100 text-emerald-800' : isMissed ? 'bg-rose-50 border-rose-100 text-rose-700' : 'bg-slate-50 border-transparent text-slate-400'} ${isAnimating ? 'animate-success-pop' : ''} ${state.isHaydNifas ? 'opacity-40 grayscale cursor-not-allowed' : ''}`}>
-                    <span className="text-[7px] font-black uppercase tracking-widest mb-1.5">{t(p)}</span>
-                    <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-all ${status === PrayerStatus.COMPLETED ? 'bg-emerald-600 text-white' : isMissed ? 'bg-rose-500 text-white' : 'bg-white text-slate-200 border border-slate-100'}`}>
-                      {status === PrayerStatus.COMPLETED ? <i className="fas fa-check text-[8px]"></i> : isMissed ? <i className="fas fa-times text-[8px]"></i> : <i className="fas fa-circle text-[3px]"></i>}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        {/* Menu Navigation Grid */}
-        <div className="grid grid-cols-2 gap-2 w-full mb-3">
+        {/* Navigation Grid - 2x4 for perfect fit */}
+        <div className="grid grid-cols-4 gap-2">
           {menuItems.map((item) => (
-            <button key={item.id} onClick={() => setCurrentView(item.id)} className={`flex flex-col items-center justify-center p-4 rounded-[28px] transition-all active-scale bg-gradient-to-br ${item.color} border border-white group relative overflow-hidden shadow-sm`}>
-              <div className={`w-8 h-8 rounded-xl ${item.iconColor} bg-white shadow-sm flex items-center justify-center mb-2 transition-transform group-hover:rotate-6`}>
-                <i className={`fas ${item.icon} text-base`}></i>
-              </div>
-              <span className="text-[8px] font-black text-center uppercase tracking-widest text-slate-800">{item.label}</span>
+            <button key={item.id} onClick={() => setCurrentView(item.id)} className={`flex flex-col items-center justify-center p-2 rounded-2xl bg-gradient-to-br ${item.color} border border-white shadow-sm active-scale`}>
+              <i className={`fas ${item.icon} text-sm mb-1 ${item.iconColor}`}></i>
+              <span className="text-[7px] font-black text-center uppercase tracking-tighter truncate w-full">{item.label}</span>
             </button>
           ))}
         </div>
-
-        {/* Featured Challenge Footer Section */}
-        {featuredChallenge && (
-          <div className="w-full pb-4">
-            <div className="w-full bg-[#064e3b] p-4 rounded-[30px] text-white shadow-xl relative overflow-hidden">
-              <div className="flex justify-between items-center mb-3">
-                <div><h3 className="text-emerald-400 text-[7px] uppercase font-black tracking-widest mb-0.5">{t('challenge')}</h3><p className="text-sm font-bold tracking-tight">{t(featuredChallenge.title)}</p></div>
-                <span className="text-xl font-black text-gold-classic tabular-nums">{Math.round((featuredChallenge.current / featuredChallenge.target) * 100)}%</span>
-              </div>
-              <div className="w-full bg-emerald-800/50 h-1.5 rounded-full overflow-hidden mb-2 p-0.5">
-                <div className="bg-gold-classic h-full rounded-full transition-all" style={{ width: `${Math.min(100, (featuredChallenge.current / featuredChallenge.target) * 100)}%` }}></div>
-              </div>
-              <div className="flex justify-between items-center text-[7px] text-emerald-400 font-bold uppercase">
-                 <span className="opacity-60">{t('progress')}</span>
-                 <span className="text-white font-black tabular-nums">{featuredChallenge.current} / {featuredChallenge.target}</span>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
