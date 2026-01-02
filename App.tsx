@@ -226,7 +226,7 @@ const App: React.FC = () => {
 
   return (
     <div className={`app-viewport ${compositeState?.settings.theme === 'dark' ? 'dark' : ''} bg-ivory dark:bg-slate-950`} dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}>
-      <main className="flex-1 overflow-hidden relative w-full h-full">
+      <main className="flex-1 overflow-hidden relative w-full h-full flex flex-col">
         {renderView()}
       </main>
       {!subView && (
